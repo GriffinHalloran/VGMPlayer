@@ -1,0 +1,176 @@
+﻿<Window x:Class="VGMPlayer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:Icon="http://metro.mahapps.com/winfx/xaml/iconpacks"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:VGMPlayer"
+        mc:Ignorable="d"
+        Title="Media Player"
+        Background="#272B2F"
+        Height="700" Width="1050"
+        MinHeight="285" MinWidth="400"
+        Closing="Window_Closing" ResizeMode="CanResizeWithGrip" AllowsTransparency="True" WindowStyle="None"><Border Background="#272B2F" CornerRadius ="40" MouseDown="Border_MouseDown">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="220" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="100"/>
+        </Grid.RowDefinitions>
+
+
+        <ListView x:Name="musicListView"
+                  Grid.Column="1"
+                  Background="Transparent"
+                  ScrollViewer.CanContentScroll="True"
+                  ScrollViewer.VerticalScrollBarVisibility="Auto"
+                  VerticalAlignment="Top"
+                  SelectionChanged="MusicListView_SelectionChanged" Grid.ColumnSpan="2">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="Foreground" Value="White"/>
+                </Style>
+            </ListView.ItemContainerStyle>
+
+            <ListView.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Play" Click="PlaySongMenuItem_Click"/>
+                    <MenuItem Header="Delete" Click="DeleteSongMenuItem_Click"/>
+                </ContextMenu>
+            </ListView.ContextMenu>
+
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Title" Width="460" DisplayMemberBinding="{Binding Path=Title}" />
+                    <GridViewColumn Header="Duration" Width="60" DisplayMemberBinding="{Binding Path=Duration}" />
+                </GridView>
+            </ListView.View>
+        </ListView>
+
+        <ContentControl x:Name="CC" Grid.Column="1"/>
+
+        <!--Menu-->
+        <Border Background="#272B2F" CornerRadius="40 0 0 40" Grid.RowSpan="2">
+            <StackPanel Margin="0 30 0 0">
+                <!--Ellipses-->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="63 10 0 10">
+                    <Ellipse Fill="#ff6258" Width="15"  Height="15" MouseLeftButtonDown="CloseApp"/>
+                    <Ellipse Fill="#ffbf2f" Width="15"  Height="15" Margin="7 0" MouseLeftButtonDown="MinimizeApp"/>
+                    <Ellipse Fill="#2acb42" Width="15"  Height="15" MouseLeftButtonDown="MaximizeApp"/>
+                </StackPanel>
+
+                <!--Left Side Menu-->
+                <TextBlock Text="LIBRARY" Style="{StaticResource menuTitle}"/>
+                <Button Style="{StaticResource menuButton}" Click="HomeButton_Click" Foreground="White">
+                    <Grid>
+                        <TextBlock Text="Home"/>
+                    </Grid>
+                </Button>
+
+                <Button Style="{StaticResource menuButton}" Click="PlaylistButton_Click" Foreground="White">
+                    <Grid>
+                        <TextBlock Text="Playlists"/>
+                    </Grid>
+                </Button>
+
+                <Button Style="{StaticResource menuButton}" Foreground="White">
+                    <Grid>
+                        <TextBlock Text="All Songs"/>
+                    </Grid>
+                </Button>
+
+                <Button Style="{StaticResource menuButton}" Click="AddPlaylistButton_Click" IsEnabled="False" Name="addPlaylistButton" Margin="30 200 0 0">
+                    <Grid>
+                        <TextBlock Text="Add Playlist"/>
+                    </Grid>
+                </Button>
+
+                <Button Style="{StaticResource menuButton}" IsEnabled="False" Click="AddSongButton_Click" Name="addSongButton">
+                    <Grid>
+                        <TextBlock Text="Add Song"/>
+                    </Grid>
+                </Button>
+
+            </StackPanel>
+        </Border>
+
+        <!--Player-->
+        <Border Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Background="#03bf69" CornerRadius="40 0 40 0" Margin="40 0 0 0">
+            <StackPanel Orientation="Horizontal">
+
+                <Ellipse Width="60" Height="60" Margin="30 0 0 0">
+                </Ellipse>
+
+                <StackPanel VerticalAlignment="Center" Margin="20 0 30 0" Width="162">
+                    <Label x:Name="currentPlayingLabel" Content="" Width="200" HorizontalContentAlignment="Center" Foreground="White" FontWeight="Bold"/>
+                    <Label x:Name="audioPositionLabel" Content="00:00:00 / 00:00:00" FontSize="14" HorizontalContentAlignment="Center" Foreground="White" VerticalAlignment="Bottom"/>
+                </StackPanel>
+
+                <Button Style="{StaticResource playerButton}" Click="SkipBackwardMenuItem_Click">
+                    <Icon:PackIconMaterial Kind="SkipPrevious" Style="{StaticResource playerButtonIcon}"/>
+                </Button>
+
+                <Button Style="{StaticResource playerButton}" Click="PlayMenuItem_Click" Name="playMenuItem">
+                    <Image x:Name="playIcon" Source="Resources/play.png"/>
+                </Button>
+
+                <Button Style="{StaticResource playerButton}" Click="SkipForwardMenuItem_Click">
+                    <Icon:PackIconMaterial Kind="SkipNext" Style="{StaticResource playerButtonIcon}"/>
+                </Button>
+
+                <Button Style="{StaticResource playerButton}" Name="volumeButton">
+                    <Icon:PackIconMaterial Kind="VolumeMedium" Style="{StaticResource playerButtonIcon}"/>
+                </Button>
+
+                <Button Style="{StaticResource playerButton}" Name="loopButton">
+                    <Icon:PackIconMaterial Kind="Repeat" Style="{StaticResource playerButtonIcon}"/>
+                </Button>
+
+                <Slider x:Name="audioPositionSlider" IsSelectionRangeEnabled="True"  Width="120" Minimum="0" Maximum="0.5" VerticalAlignment="Center" Value="5" SelectionEnd="{Binding ElementName=slider, Path=Value}" ValueChanged="AudioPositionSlider_ValueChanged"/>
+                <StackPanel x:Name="volumePanel" Visibility="Collapsed" Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Label Content="Volume:" Foreground="White"/>
+                    <Slider x:Name="volumeSlider" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Right" Width="120" Minimum="0" Maximum="0.5" ValueChanged="VolumeSlider_ValueChanged"/>
+                </StackPanel>
+            </StackPanel>
+
+        </Border>
+
+
+        <!-- Music Player-->
+        <Grid.ContextMenu>
+            <ContextMenu>
+                <MenuItem x:Name="pauseMenuItem" Header="Pause" IsEnabled="False" Click="PauseMenuItem_Click">
+                    <MenuItem.Icon>
+                        <Image Source="Resources/pause.png" />
+                    </MenuItem.Icon>
+                </MenuItem>
+
+                <MenuItem x:Name="loopMenuItem" Header="Loop" IsCheckable="True" Click="LoopMenuItem_Click">
+                    <MenuItem.Icon>
+                        <Image Source="Resources/loop.png" />
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Volume">
+                    <MenuItem.Icon>
+                        <Image Source="Resources/volume-low.png" />
+                    </MenuItem.Icon>
+                    <Label Content="100%" MouseLeftButtonUp="Volume100MenuItem_Click"/>
+                    <Label Content="75%" MouseLeftButtonUp="Volume75MenuItem_Click"/>
+                    <Label Content="50%" MouseLeftButtonUp="Volume50MenuItem_Click"/>
+                    <Label Content="25%" MouseLeftButtonUp="Volume25MenuItem_Click"/>
+                    <Label Content="0%" MouseLeftButtonUp="Volume0MenuItem_Click"/>
+                </MenuItem>
+            </ContextMenu>
+        </Grid.ContextMenu>
+
+        <!--Playlists-->
+
+    </Grid>
+
+</Border>
+</Window>
+
