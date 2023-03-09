@@ -35,16 +35,17 @@ namespace VGMPlayer
                 PlaylistPage.libraryList.Add(libraryName);
 
                 Directory.CreateDirectory(currentPath + "/library/" + libraryName);
-                (this.Owner as MainWindow).PlaylistPage().libraryListView.Items.Refresh();
+                (Owner as MainWindow).PlaylistPage().libraryListView.Items.Refresh();
                 Application.Current.MainWindow.Focus();
 
 
-                if ((this.Owner as MainWindow).PlaylistPage().libraryListView.SelectedValue == null) return;
+                if ((Owner as MainWindow).PlaylistPage().libraryListView.SelectedValue == null) return;
 
-                if (libraryName == (this.Owner as MainWindow).PlaylistPage().libraryListView.SelectedValue.ToString())
+                if (libraryName == (Owner as MainWindow).PlaylistPage().libraryListView.SelectedValue.ToString())
                 {
-                    (this.Owner as MainWindow).musicListView.Items.Clear();
-                    (this.Owner as MainWindow).musicListView.Items.Refresh();
+                    (Owner as MainWindow).musicListView.Items.Clear();
+                    (Owner as MainWindow).musicListView.Items.Refresh();
+
                 }
             }
             else
@@ -65,12 +66,12 @@ namespace VGMPlayer
                 {
                     Directory.Move(currentPath + "/library/" + selectedLibrary, currentPath + "/library/" + libraryName); // Renames the directory.
 
-                    PlaylistPage.libraryList[(this.Owner as MainWindow).PlaylistPage().libraryListView.SelectedIndex] = libraryName;
-                    (this.Owner as MainWindow).PlaylistPage().libraryListView.Items.Refresh();
+                    PlaylistPage.libraryList[(Owner as MainWindow).PlaylistPage().libraryListView.SelectedIndex] = libraryName;
+                    (Owner as MainWindow).PlaylistPage().libraryListView.Items.Refresh();
                     Application.Current.MainWindow.Focus();
 
                     MainWindow.currentlyViewingMusicList.Clear(); // Clears currently viewing list to ensure that errors get eliminated.
-                    (this.Owner as MainWindow).musicListView.Items.Refresh();
+                    (Owner as MainWindow).musicListView.Items.Refresh();
                 }
                 catch
                 {

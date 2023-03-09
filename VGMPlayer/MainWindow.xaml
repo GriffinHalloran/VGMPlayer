@@ -77,7 +77,7 @@
                     </Grid>
                 </Button>
 
-                <Button Style="{StaticResource menuButton}" Foreground="White">
+                    <Button Style="{StaticResource menuButton}" Click="AllSongButton_Click" Foreground="White">
                     <Grid>
                         <TextBlock Text="All Songs"/>
                     </Grid>

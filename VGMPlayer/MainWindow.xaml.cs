@@ -46,7 +46,8 @@ namespace VGMPlayer
             playlistPage = new PlaylistPage();
             homePage = new HomePage();
 
-            playlistPage.playlistClicked += (s, e) => CheckSongStatus();
+            playlistPage.PlaylistSelected += (s, e) => EnableSongButton();
+            playlistPage.PlaylistDoubleClicked += (s, e) => CheckSongStatus();
 
 
             InitializeComponent();
@@ -117,6 +118,43 @@ namespace VGMPlayer
             currentlyViewingMusicList.Clear();
             musicListView.Items.Refresh();
             string filePath = $"C:/Users/griff/Desktop/VGM Library/library/{PlaylistPage().libraryListView.SelectedValue.ToString()}/";
+            FileInfo[] files = new DirectoryInfo(filePath) // Gets songs in date added order
+                        .GetFiles("*.mp3")
+                        .OrderBy(f => f.CreationTime)
+                        .ToArray();
+
+            foreach (var directoryPath in files)
+            {
+                try
+                {
+                    string titleAndDuration = directoryPath.Name.ToString();
+                    string title = titleAndDuration.Substring(0, titleAndDuration.LastIndexOf('-') - 1);
+                    string duration = titleAndDuration.Substring(titleAndDuration.LastIndexOf('-') + 2, 8).Replace('.', ':');
+
+                    currentlyViewingMusicList.Add(new MusicList { Filename = $"{title} - {duration.Replace(':', '.')}.mp3", Title = title, Duration = TimeSpan.Parse(duration) });
+                }
+
+                catch (Exception) // Happens if file name doesn't include duration of song.
+                {
+                    Mp3FileReader reader = new Mp3FileReader($"{filePath}/{directoryPath}");
+                    string title = directoryPath.Name.ToString().Remove(directoryPath.Name.ToString().Length - 4);
+                    TimeSpan duration = TimeSpan.Parse(reader.TotalTime.ToString(@"hh\:mm\:ss"));
+                    currentlyViewingMusicList.Add(new MusicList { Filename = $"{title} - {duration.ToString().Replace(':', '.')}.mp3", Title = title, Duration = duration });
+                    reader.Dispose();
+                    File.Move($"{filePath}/{directoryPath}", $"{filePath}/{title} - {duration.ToString().Replace(':', '.')}.mp3");
+                }
+                musicListView.Items.Refresh();
+            }
+        }
+
+        // Check all songs in selected library.
+        public void SongCollectionPage()
+        {
+            Console.WriteLine("Song Page"); // Used only for debuggin purposes
+            CC.Content = null;
+            currentlyViewingMusicList.Clear();
+            musicListView.Items.Refresh();
+            string filePath = "C:/Users/griff/Desktop/VGM Library/library/Song Collection/";
             FileInfo[] files = new DirectoryInfo(filePath) // Gets songs in date added order
                         .GetFiles("*.mp3")
                         .OrderBy(f => f.CreationTime)
@@ -281,14 +319,6 @@ namespace VGMPlayer
             mediaPlayer.Volume = volumeSlider.Value;
         }
 
-        // For creating a music library
-        private void NewLibraryButton_Click(object sender, RoutedEventArgs e)
-        {
-            var newNameWin = new CreatePlaylist_Window("Create new Library");
-            newNameWin.Owner = this;
-            newNameWin.ShowDialog();
-        }
-
         // For renaming a music library
         private void AddSongButton_Click(object sender, RoutedEventArgs e)
         {
@@ -311,7 +341,7 @@ namespace VGMPlayer
             addSongButton.IsEnabled = false;
             addPlaylistButton.IsEnabled = false;
         }
-
+        
         // For opening playlist view
         private void PlaylistButton_Click(object sender, RoutedEventArgs e)
         {
@@ -319,6 +349,13 @@ namespace VGMPlayer
             addSongButton.IsEnabled = false;
             addPlaylistButton.IsEnabled = true;
         }
+        // For opening playlist view
+        private void AllSongButton_Click(object sender, RoutedEventArgs e)
+        {
+            SongCollectionPage();
+            addPlaylistButton.IsEnabled = false;
+        }
+
 
         public PlaylistPage PlaylistPage()
         {
@@ -332,6 +369,11 @@ namespace VGMPlayer
         public void DisableSongButton()
         {
             addSongButton.IsEnabled = false;
+        }
+
+        public void EnableSongButton()
+        {
+            addSongButton.IsEnabled = true;
         }
 
         private void MusicListView_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)

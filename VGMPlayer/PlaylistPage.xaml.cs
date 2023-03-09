@@ -25,13 +25,13 @@ namespace VGMPlayer
     public partial class PlaylistPage : UserControl
     {
         public static List<string> libraryList = new List<string>();
-        public event EventHandler playlistClicked;
+        public event EventHandler PlaylistDoubleClicked;
+        public event EventHandler PlaylistSelected;
         public PlaylistPage()
         {
             InitializeComponent();
             CheckLibraryStatus();
             libraryListView.ItemsSource = libraryList;
-
         }
 
         // Changes the library order by one to up.
@@ -57,10 +57,10 @@ namespace VGMPlayer
         }
 
         // Checks songs in new selected library and updates them into currently viewing list.
-        private void LibraryListView_Clicked(object sender, MouseButtonEventArgs e)
+        private void LibraryListView_DoubleClicked(object sender, MouseButtonEventArgs e)
         {
-            Console.WriteLine("Playlist clicked"); // Used only for debuggin purposes
-            playlistClicked?.Invoke(this, EventArgs.Empty);
+                System.Diagnostics.Debug.WriteLine("Playlist clicked"); // Used only for debuggin purposes
+                PlaylistDoubleClicked?.Invoke(this, EventArgs.Empty);
         }
 
         private void RenameLibrary_Click(object sender, RoutedEventArgs e)
@@ -68,9 +68,19 @@ namespace VGMPlayer
             if (libraryListView.SelectedIndex == -1) return;
         }
 
+        // Checks songs in new selected library and updates them into currently viewing list.
+        private void LibraryListView_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            PlaylistSelected?.Invoke(this, EventArgs.Empty);
+        }
 
         private void DeleteLibraryItem()
         {
+            if (libraryListView.SelectedValue.ToString() == "Song Collection")
+            {
+                MessageBox.Show("Cannot Delete Main Library.", "Error");
+                return;
+            }
             string currentPath = "C:/Users/griff/Desktop/VGM Library";
             Directory.Delete(currentPath + "/library/" + libraryListView.SelectedValue.ToString(), true); // Deletes the directory and all the files inside it.
 
@@ -85,6 +95,10 @@ namespace VGMPlayer
             if (!Directory.Exists(currentPath + "/library")) // Creates a root directory for all music libraries.
             {
                 Directory.CreateDirectory(currentPath + "/library");
+            }
+            if (!Directory.Exists(currentPath + "/library/Song Collection")) // Creates a root directory for all music libraries.
+            {
+                Directory.CreateDirectory(currentPath + "/library/Song Collection");
             }
             var di = new DirectoryInfo(currentPath + "/library");
             Console.WriteLine(Directory.GetCurrentDirectory()); // Used only for debuggin purposes
