@@ -6,6 +6,7 @@ using System.Windows;
 
 using YoutubeExplode;
 using YoutubeExplode.Converter;
+using YoutubeExplode.Videos.Streams;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace VGMPlayer
@@ -42,22 +43,38 @@ namespace VGMPlayer
                 var duration = video.Duration;
                 var cleanDuration = CleanDuration((TimeSpan)duration); // Converts duration to legal filename e.g (00.37.12) instead of (00:37:12)
                 CheckLibraryStatus(); // Check that root directory exists
+                titleLabel.Visibility = Visibility.Visible;
+                songDurationLabel.Visibility = Visibility.Visible;
+                rectangle2.Visibility = Visibility.Visible;
+                rectangle3.Visibility = Visibility.Visible;
+                songDuration.Text = cleanDuration;
+                songTitle.Text = cleanTitle;
 
-                if (File.Exists($"./library/{(this.Owner as MainWindow).PlaylistPage().libraryListView.SelectedValue.ToString()}/{cleanTitle} - {cleanDuration}.mp3"))
+                if (File.Exists($"C:/Users/griff/Desktop/VGM Library/library/{(this.Owner as MainWindow).PlaylistPage().libraryListView.SelectedValue.ToString()}/{cleanTitle} - {cleanDuration}.mp3"))
                 {
                     MessageBox.Show("The song is already in the library", "Error");
                     return;
                 }
 
                 MainWindow.currentlyViewingMusicList.Add(new MusicList { Filename = $"{cleanTitle} - {cleanDuration}.mp3", Title = cleanTitle, Duration = (TimeSpan)duration });
-                var destinationPath = Path.Combine($"./library/{(this.Owner as MainWindow).PlaylistPage().libraryListView.SelectedValue.ToString()}/{cleanTitle} - {cleanDuration}.mp3");
+                var destinationPath = Path.Combine($"C:/Users/griff/Desktop/VGM Library/library/{(this.Owner as MainWindow).PlaylistPage().libraryListView.SelectedValue.ToString()}/{cleanTitle} - {cleanDuration}.mp3");
 
                 okButton.IsEnabled = false; // Disables buttons to notify user and to keep errors away.
                 closeButton.IsEnabled = false;
                 songLabel.IsEnabled = false;
                 downloadingLabel.Visibility = Visibility.Visible;
 
-                await youtube.Videos.DownloadAsync(youtubeID, destinationPath);
+                var streamManifest = await youtube.Videos.Streams.GetManifestAsync(youtubeID);
+                var streamInfo = streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate();
+
+                if (streamInfo != null)
+                {
+                    // Get the actual stream
+                    var stream = await youtube.Videos.Streams.GetAsync(streamInfo);
+
+                    // Download the stream to file
+                    await youtube.Videos.Streams.DownloadAsync(streamInfo, destinationPath);
+                }
 
                 MainWindow.currentlyPlayingMusicList = new List<MusicList>(MainWindow.currentlyViewingMusicList);
                 (this.Owner as MainWindow).musicListView.Items.Refresh();
@@ -73,11 +90,11 @@ namespace VGMPlayer
             }
             catch (ArgumentException)
             {
-                MessageBox.Show("Invalid Youtube video id or url.", "Error");
+                MessageBox.Show("Invalid Youtube video id or url545435.", "Error");
             }
             catch (Exception er)
             {
-                MessageBox.Show("Invalid Youtube video id or url.", er.ToString());
+                MessageBox.Show("Invalid Youtube video id or url2323.", er.ToString());
             }
 
             this.Close(); // Lastly closes the window
@@ -100,6 +117,11 @@ namespace VGMPlayer
         private string CleanTitle(string title)
         {
             return string.Join("_", title.Split(Path.GetInvalidFileNameChars()));
+        }
+
+        private void songLabel_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+
         }
     }
 }
