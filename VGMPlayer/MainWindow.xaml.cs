@@ -196,7 +196,7 @@ namespace VGMPlayer
             }
 
             currentPlayingIndex++;
-            var mediaFile = new Uri(Environment.CurrentDirectory + $"/library/{PlaylistPage().libraryListView.SelectedValue.ToString()}/{currentlyPlayingMusicList[currentPlayingIndex].Filename}");
+            var mediaFile = new Uri($"C:/Users/griff/Desktop/VGM Library/library/{PlaylistPage().libraryListView.SelectedValue.ToString()}/{currentlyPlayingMusicList[currentPlayingIndex].Filename}");
             mediaPlayer.Open(mediaFile);
             audioPositionSlider.Maximum = currentlyPlayingMusicList[currentPlayingIndex].Duration.TotalSeconds;
             if (isPlayingAudio)
@@ -220,7 +220,7 @@ namespace VGMPlayer
             }
 
             currentPlayingIndex--;
-            var mediaFile = new Uri(Environment.CurrentDirectory + $"/library/{PlaylistPage().libraryListView.SelectedValue.ToString()}/{currentlyPlayingMusicList[currentPlayingIndex].Filename}");
+            var mediaFile = new Uri($"C:/Users/griff/Desktop/VGM Library/library/{PlaylistPage().libraryListView.SelectedValue.ToString()}/{currentlyPlayingMusicList[currentPlayingIndex].Filename}");
             mediaPlayer.Open(mediaFile);
             audioPositionSlider.Maximum = currentlyPlayingMusicList[currentPlayingIndex].Duration.TotalSeconds;
             if (isPlayingAudio)
@@ -243,8 +243,7 @@ namespace VGMPlayer
                     currentlyPlayingMusicList = new List<MusicList>(currentlyViewingMusicList);
                     currentPlayingIndex = musicListView.SelectedIndex;
                     currentPlayingLabel.Content = currentlyPlayingMusicList[currentPlayingIndex].Title;
-
-                    var mediaFile = new Uri(Environment.CurrentDirectory + $"/library/{PlaylistPage().libraryListView.SelectedValue.ToString()}/{currentlyPlayingMusicList[currentPlayingIndex].Filename}");
+                    var mediaFile = new Uri($"C:/Users/griff/Desktop/VGM Library/library/{PlaylistPage().libraryListView.SelectedValue.ToString()}/{currentlyPlayingMusicList[currentPlayingIndex].Filename}");
                     mediaPlayer.Open(mediaFile);
                     audioPositionSlider.Maximum = currentlyPlayingMusicList[currentPlayingIndex].Duration.TotalSeconds;
                 }
@@ -490,7 +489,7 @@ namespace VGMPlayer
         {
             if (musicListView.SelectedIndex == -1) return;
 
-            string songPath = $"./library/{PlaylistPage().libraryListView.SelectedValue.ToString()}/{currentlyViewingMusicList[musicListView.SelectedIndex].Filename}";
+            string songPath = $"C:/Users/griff/Desktop/VGM Library/library/{PlaylistPage().libraryListView.SelectedValue.ToString()}/{currentlyViewingMusicList[musicListView.SelectedIndex].Filename}";
 
             if (currentlyPlayingMusicList.SequenceEqual(currentlyViewingMusicList) && currentPlayingLabel.Content.ToString().Length != 0)
             {
