@@ -12,6 +12,12 @@ using NAudio.Wave;
 using System.Windows.Input;
 using System.Windows.Forms;
 using MessageBox = System.Windows.MessageBox;
+using MahApps.Metro.IconPacks;
+using AngleSharp.Dom;
+using Microsoft.VisualBasic.ApplicationServices;
+using static System.Windows.Forms.AxHost;
+using System.Windows.Controls;
+using System.Windows.Shapes;
 
 namespace VGMPlayer
 {
@@ -100,13 +106,11 @@ namespace VGMPlayer
             if (isLooping) // Enables looping
             {
                 loopButton.Background = Brushes.Gray;
-                loopMenuItem.IsChecked = false;
                 isLooping = false;
             }
             else // Disables looping
             {
                 loopButton.Background = Brushes.AliceBlue;
-                loopMenuItem.IsChecked = true;
                 isLooping = true;
             }
         }
@@ -249,13 +253,9 @@ namespace VGMPlayer
                 }
             }
             if (currentlyPlayingMusicList.Count == 0) return;
-
             mediaPlayer.Play();
-
-            playMenuItem.IsEnabled = false;
-            pauseMenuItem.IsEnabled = true;
+            PlayIcon.Kind = MahApps.Metro.IconPacks.PackIconMaterialKind.Pause;
             isPlayingAudio = true;
-            playIcon.Source = new BitmapImage(new Uri("./Resources/pause.png", UriKind.Relative));
         }
         private void AudioPositionSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
@@ -267,11 +267,8 @@ namespace VGMPlayer
         private void PauseAudio()
         {
             mediaPlayer.Pause();
-
-            playMenuItem.IsEnabled = true;
-            pauseMenuItem.IsEnabled = false;
+            PlayIcon.Kind = MahApps.Metro.IconPacks.PackIconMaterialKind.Play;
             isPlayingAudio = false;
-            playIcon.Source = new BitmapImage(new Uri("./Resources/play.png", UriKind.Relative));
         }
 
         private void PlayMedia()
@@ -295,12 +292,10 @@ namespace VGMPlayer
         {
             if (volumePanel.IsVisible)
             {
-                volumePanel.Visibility = Visibility.Collapsed;
                 volumeButton.Background = Brushes.Gray;
             }
             else
             {
-                volumePanel.Visibility = Visibility.Visible;
                 volumeButton.Background = Brushes.AliceBlue;
             }
         }
