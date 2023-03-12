@@ -17,26 +17,33 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
             <RowDefinition Height="100"/>
         </Grid.RowDefinitions>
 
 
-        <ListView x:Name="musicListView"
+            <ListView x:Name="musicListView"
                   Grid.Column="1"
-                  Background="Transparent"
+                  Margin= "0, 60, 30, 0"
                   ScrollViewer.CanContentScroll="True"
                   ScrollViewer.VerticalScrollBarVisibility="Auto"
                   VerticalAlignment="Top"
+                  Background="Black"
+                  BorderThickness="2"
+                  BorderBrush="Black"
                   SelectionChanged="MusicListView_SelectionChanged" Grid.ColumnSpan="2">
-            <ListView.ItemContainerStyle>
-                <Style TargetType="ListViewItem">
-                    <Setter Property="Foreground" Value="White"/>
-                </Style>
-            </ListView.ItemContainerStyle>
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="Foreground" Value="Black"/>
+                        <Setter Property="Background" Value="#4C4E52"/>
+                        <Setter Property="Height" Value="50" />
+                        <Setter Property="FontFamily" Value="ui-monospace"/>
+                        <Setter Property="FontSize" Value="18"/>
+                    </Style>
+                </ListView.ItemContainerStyle>
 
-            <ListView.ContextMenu>
+                <ListView.ContextMenu>
                 <ContextMenu>
                     <MenuItem Header="Play" Click="PlaySongMenuItem_Click"/>
                     <MenuItem Header="Delete" Click="DeleteSongMenuItem_Click"/>
@@ -44,10 +51,10 @@
             </ListView.ContextMenu>
 
             <ListView.View>
-                <GridView>
-                    <GridViewColumn Header="Title" Width="460" DisplayMemberBinding="{Binding Path=Title}" />
-                    <GridViewColumn Header="Duration" Width="60" DisplayMemberBinding="{Binding Path=Duration}" />
-                </GridView>
+                <GridView ColumnHeaderContainerStyle="{StaticResource GridViewColumnHeader}">
+                    <GridViewColumn Header="Title" Width="500" DisplayMemberBinding="{Binding Path=Title}" />
+                        <GridViewColumn Header="Duration" Width="200" DisplayMemberBinding="{Binding Path=Duration}" />
+                    </GridView>
             </ListView.View>
         </ListView>
 
