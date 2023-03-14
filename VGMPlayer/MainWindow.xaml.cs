@@ -18,6 +18,7 @@ using Microsoft.VisualBasic.ApplicationServices;
 using static System.Windows.Forms.AxHost;
 using System.Windows.Controls;
 using System.Windows.Shapes;
+using Newtonsoft.Json.Linq;
 
 namespace VGMPlayer
 {
@@ -37,6 +38,8 @@ namespace VGMPlayer
         private int currentPlayingIndex;
         private PlaylistPage playlistPage;
         private HomePage homePage;
+        private SoundtrackPage soundtrackPage;
+        private Rename_Window renameWindow;
 
         public MainWindow()
         {
@@ -51,10 +54,11 @@ namespace VGMPlayer
             mediaPlayer = new MediaPlayer();
             playlistPage = new PlaylistPage();
             homePage = new HomePage();
+            renameWindow = new Rename_Window();
 
             playlistPage.PlaylistSelected += (s, e) => EnableSongButton();
             playlistPage.PlaylistDoubleClicked += (s, e) => CheckSongStatus();
-
+            renameWindow.RenameSelected += (s, e) => RenameSong();
 
             InitializeComponent();
 
@@ -90,6 +94,9 @@ namespace VGMPlayer
 
                     if (isLooping)
                     {
+                        audioPositionSlider.Value = 0; // Reset slider and label values back to zero.
+                        mediaPlayer.Position = TimeSpan.Zero;
+                        audioPositionLabel.Content = $"{mediaPlayer.Position.ToString(@"hh\:mm\:ss")} / {currentlyPlayingMusicList[currentPlayingIndex].Duration}";
                         mediaPlayer.Play();
                     }
                     else
@@ -105,19 +112,18 @@ namespace VGMPlayer
         {
             if (isLooping) // Enables looping
             {
-                loopButton.Background = Brushes.Gray;
+                loopButton.Foreground = Brushes.Gray;
                 isLooping = false;
             }
             else // Disables looping
             {
-                loopButton.Background = Brushes.AliceBlue;
+                loopButton.Foreground = Brushes.AliceBlue;
                 isLooping = true;
             }
         }
         // Check all songs in selected library.
         public void CheckSongStatus()
         {
-            Console.WriteLine("Playlist clicked"); // Used only for debuggin purposes
             CC.Content = null;
             currentlyViewingMusicList.Clear();
             musicListView.Items.Refresh();
@@ -270,6 +276,19 @@ namespace VGMPlayer
             PlayIcon.Kind = MahApps.Metro.IconPacks.PackIconMaterialKind.Play;
             isPlayingAudio = false;
         }
+        private void VolumeButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (volumeSlider.IsVisible)
+            {
+                volumeSlider.Visibility = System.Windows.Visibility.Collapsed;
+                volumeButton.Foreground = Brushes.Gray;
+            }
+            else
+            {
+                volumeSlider.Visibility = System.Windows.Visibility.Visible;
+                volumeButton.Foreground = Brushes.AliceBlue;
+            }
+        }
 
         private void PlayMedia()
         {
@@ -281,28 +300,6 @@ namespace VGMPlayer
             {
                 PauseAudio();
             }
-        }
-
-        private void PlayButton_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
-            PlayMedia();
-        }
-
-        private void VolumeButton_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
-            if (volumePanel.IsVisible)
-            {
-                volumeButton.Background = Brushes.Gray;
-            }
-            else
-            {
-                volumeButton.Background = Brushes.AliceBlue;
-            }
-        }
-
-        private void LoopButton_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
-            Loop();
         }
 
         private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -335,7 +332,7 @@ namespace VGMPlayer
             addSongButton.IsEnabled = false;
             addPlaylistButton.IsEnabled = false;
         }
-        
+
         // For opening playlist view
         private void PlaylistButton_Click(object sender, RoutedEventArgs e)
         {
@@ -343,7 +340,15 @@ namespace VGMPlayer
             addSongButton.IsEnabled = false;
             addPlaylistButton.IsEnabled = true;
         }
+
         // For opening playlist view
+        private void SoundtrackButton_Click(object sender, RoutedEventArgs e)
+        {
+            //CC.Content = SoundtrackPage();
+            addSongButton.IsEnabled = false;
+            addPlaylistButton.IsEnabled = false;
+        }
+        // For opening song library view
         private void AllSongButton_Click(object sender, RoutedEventArgs e)
         {
             SongCollectionPage();
@@ -358,6 +363,11 @@ namespace VGMPlayer
         public HomePage HomePage()
         {
             return this.homePage;
+        }
+
+        public SoundtrackPage SoundtrackPage()
+        {
+            return this.soundtrackPage;
         }
 
         public void DisableSongButton()
@@ -380,11 +390,6 @@ namespace VGMPlayer
             PlayMedia();
         }
 
-        private void PauseMenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            PlayMedia();
-        }
-
         private void SkipForwardMenuItem_Click(object sender, RoutedEventArgs e)
         {
             SkipForward();
@@ -400,30 +405,6 @@ namespace VGMPlayer
             Loop();
         }
 
-        private void Volume100MenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            volumeSlider.Value = volumeSlider.Maximum;
-        }
-
-        private void Volume75MenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            volumeSlider.Value = volumeSlider.Maximum * 0.75f;
-        }
-
-        private void Volume50MenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            volumeSlider.Value = volumeSlider.Maximum * 0.5f;
-        }
-
-        private void Volume25MenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            volumeSlider.Value = volumeSlider.Maximum * 0.25f;
-        }
-
-        private void Volume0MenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            volumeSlider.Value = 0;
-        }
         private void Border_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left)
@@ -434,6 +415,8 @@ namespace VGMPlayer
 
         private void CloseApp(object sender, MouseButtonEventArgs e)
         {
+            playlistPage.renameWindow.Close();
+            renameWindow.Close();
             Close();
         }
         private void MinimizeApp(object sender, MouseButtonEventArgs e)
@@ -443,16 +426,6 @@ namespace VGMPlayer
         private void MaximizeApp(object sender, MouseButtonEventArgs e)
         {
             WindowState = WindowState.Maximized;
-        }
-
-        private void SkipForward_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
-            SkipForward();
-        }
-
-        private void SkipBackward_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
-            SkipBackward();
         }
 
         private void PlaySongMenuItem_Click(object sender, RoutedEventArgs e)
@@ -498,6 +471,24 @@ namespace VGMPlayer
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
+        }
+        private void RenameSongMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            renameWindow.ShowDialog();
+        }
+
+        private void RenameSong()
+        {
+            if (musicListView.Items.Count != 0 && musicListView.SelectedItem != null && renameWindow.GetTitle().Length > 0)
+            {
+                string songPath = $"C:/Users/griff/Desktop/VGM Library/library/{PlaylistPage().libraryListView.SelectedValue.ToString()}/";
+                string curSong = currentlyViewingMusicList[musicListView.SelectedIndex].Filename;
+                string title = curSong.Substring(0, curSong.LastIndexOf('-') - 1);
+                string duration = curSong.Substring(curSong.LastIndexOf('-') + 2, 8).Replace('.', ':');
+                System.IO.File.Move(songPath + curSong, songPath + $"{renameWindow.GetTitle()} - {duration.Replace(':', '.')}.mp3");
+                CheckSongStatus();
+                
+            }
         }
     }
 }

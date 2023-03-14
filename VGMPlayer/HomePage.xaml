@@ -7,7 +7,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid Background="#272B2F">
-        <Image Source="C:/Users/griff/source/repos/VGMPlayer/VGMPlayer/Resources/zelda.png" Stretch="Uniform" Margin="10 10 0 150"/>
+        <Image Source="C:/Users/griff/source/repos/VGMPlayer/VGMPlayer/Resources/zelda.png" Stretch="Uniform" Margin="5,65,5,95"/>
     </Grid>
 </UserControl>
 

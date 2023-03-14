@@ -45,68 +45,75 @@
                 </ListView.ItemContainerStyle>
 
                 <ListView.ContextMenu>
-                <ContextMenu>
-                    <MenuItem Header="Play" Click="PlaySongMenuItem_Click"/>
-                    <MenuItem Header="Delete" Click="DeleteSongMenuItem_Click"/>
-                </ContextMenu>
-            </ListView.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Play" Click="PlaySongMenuItem_Click"/>
+                        <MenuItem Header="Delete" Click="DeleteSongMenuItem_Click"/>
+                        <MenuItem Header="Rename" Click="RenameSongMenuItem_Click"/>
+                    </ContextMenu>
+                </ListView.ContextMenu>
 
-            <ListView.View>
-                <GridView ColumnHeaderContainerStyle="{StaticResource GridViewColumnHeader}">
-                    <GridViewColumn Header="Title" Width="630" DisplayMemberBinding="{Binding Path=Title}" />
+                <ListView.View>
+                    <GridView ColumnHeaderContainerStyle="{StaticResource GridViewColumnHeader}">
+                        <GridViewColumn Header="Title" Width="630" DisplayMemberBinding="{Binding Path=Title}" />
                         <GridViewColumn Header="Duration" Width="120" DisplayMemberBinding="{Binding Path=Duration}" />
                     </GridView>
-            </ListView.View>
-        </ListView>
+                </ListView.View>
+            </ListView>
 
-        <ContentControl x:Name="CC" Grid.Column="1"/>
+            <ContentControl x:Name="CC" Grid.Column="1"/>
 
-        <!--Menu-->
-        <Border Background="#272B2F" CornerRadius="40 0 0 40" Grid.RowSpan="2">
-            <StackPanel Margin="0 30 0 0">
-                <!--Ellipses-->
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="63 10 0 10">
-                    <Ellipse Fill="#ff6258" Width="15"  Height="15" MouseLeftButtonDown="CloseApp"/>
-                    <Ellipse Fill="#ffbf2f" Width="15"  Height="15" Margin="7 0" MouseLeftButtonDown="MinimizeApp"/>
-                    <Ellipse Fill="#2acb42" Width="15"  Height="15" MouseLeftButtonDown="MaximizeApp"/>
-                </StackPanel>
+            <!--Menu-->
+            <Border Background="#272B2F" CornerRadius="40 0 0 40" Grid.RowSpan="2">
+                <StackPanel Margin="0 30 0 0">
+                    <!--Ellipses-->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="63 10 0 10">
+                        <Ellipse Fill="#ff6258" Width="15"  Height="15" MouseLeftButtonDown="CloseApp"/>
+                        <Ellipse Fill="#ffbf2f" Width="15"  Height="15" Margin="7 0" MouseLeftButtonDown="MinimizeApp"/>
+                        <Ellipse Fill="#2acb42" Width="15"  Height="15" MouseLeftButtonDown="MaximizeApp"/>
+                    </StackPanel>
 
-                <!--Left Side Menu-->
-                <TextBlock Text="LIBRARY" Style="{StaticResource menuTitle}"/>
-                <Button Style="{StaticResource menuButton}" Click="HomeButton_Click" Foreground="White">
-                    <Grid>
-                        <TextBlock Text="Home"/>
-                    </Grid>
-                </Button>
+                    <!--Left Side Menu-->
+                    <TextBlock Text="LIBRARY" Style="{StaticResource menuTitle}"/>
+                    <Button Style="{StaticResource menuButton}" Click="HomeButton_Click" Foreground="White">
+                        <Grid>
+                            <TextBlock Text="Home"/>
+                        </Grid>
+                    </Button>
 
-                <Button Style="{StaticResource menuButton}" Click="PlaylistButton_Click" Foreground="White">
-                    <Grid>
-                        <TextBlock Text="Playlists"/>
-                    </Grid>
-                </Button>
+                    <Button Style="{StaticResource menuButton}" Click="PlaylistButton_Click" Foreground="White">
+                        <Grid>
+                            <TextBlock Text="Playlists"/>
+                        </Grid>
+                    </Button>
+
+                    <Button Style="{StaticResource menuButton}" Click="SoundtrackButton_Click" Foreground="White">
+                        <Grid>
+                            <TextBlock Text="Soundtracks"/>
+                        </Grid>
+                    </Button>
 
                     <Button Style="{StaticResource menuButton}" Click="AllSongButton_Click" Foreground="White">
-                    <Grid>
-                        <TextBlock Text="All Songs"/>
-                    </Grid>
-                </Button>
+                        <Grid>
+                            <TextBlock Text="All Songs"/>
+                        </Grid>
+                    </Button>
 
-                <Button Style="{StaticResource menuButton}" Click="AddPlaylistButton_Click" IsEnabled="False" Name="addPlaylistButton" Margin="30 200 0 0">
-                    <Grid>
-                        <TextBlock Text="Add Playlist"/>
-                    </Grid>
-                </Button>
+                    <Button Style="{StaticResource menuButton}" Click="AddPlaylistButton_Click" IsEnabled="False" Name="addPlaylistButton" Margin="30 200 0 0">
+                        <Grid>
+                            <TextBlock Text="Add Playlist"/>
+                        </Grid>
+                    </Button>
 
-                <Button Style="{StaticResource menuButton}" IsEnabled="False" Click="AddSongButton_Click" Name="addSongButton">
-                    <Grid>
-                        <TextBlock Text="Add Song"/>
-                    </Grid>
-                </Button>
+                    <Button Style="{StaticResource menuButton}" IsEnabled="False" Click="AddSongButton_Click" Name="addSongButton">
+                        <Grid>
+                            <TextBlock Text="Add Song"/>
+                        </Grid>
+                    </Button>
 
-            </StackPanel>
-        </Border>
+                </StackPanel>
+            </Border>
 
-        <!--Player-->
+            <!--Player-->
             <Border Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Background="#03bf69" CornerRadius="40 0 40 0" Margin="40 0 0 0">
                 <StackPanel Orientation="Horizontal">
 
@@ -130,23 +137,19 @@
                         <Icon:PackIconMaterial Kind="SkipNext" Style="{StaticResource playerButtonIcon}"/>
                     </Button>
 
-                    <Button Style="{StaticResource playerButton}" Name="volumeButton">
+                    <Button Style="{StaticResource playerButton}" Name="volumeButton" Click="VolumeButton_Click" Foreground="Gray">
                         <Icon:PackIconMaterial Kind="VolumeMedium" Style="{StaticResource playerButtonIcon}"/>
                     </Button>
-
-                    <Button Style="{StaticResource playerButton}" Name="loopButton">
+                    <Slider x:Name="volumeSlider" Visibility="Collapsed" Width="118" Minimum="0" Maximum="0.5" ValueChanged="VolumeSlider_ValueChanged" Height="20"/>
+                    <Button Style="{StaticResource playerButton}" Name="loopButton" Foreground ="Gray" Click="LoopMenuItem_Click">
                         <Icon:PackIconMaterial Kind="Repeat" Style="{StaticResource playerButtonIcon}"/>
                     </Button>
 
                     <Slider x:Name="audioPositionSlider" IsSelectionRangeEnabled="True"  Width="120" Minimum="0" Maximum="0.5" VerticalAlignment="Center" Value="5" SelectionEnd="{Binding ElementName=slider, Path=Value}" ValueChanged="AudioPositionSlider_ValueChanged"/>
-                    <StackPanel x:Name="volumePanel" Visibility="Collapsed" Orientation="Horizontal" HorizontalAlignment="Center">
-                        <Label Content="Volume:" Foreground="White"/>
-                        <Slider x:Name="volumeSlider" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Right" Width="120" Minimum="0" Maximum="0.5" ValueChanged="VolumeSlider_ValueChanged"/>
-                    </StackPanel>
                 </StackPanel>
             </Border>
         </Grid>
 
-</Border>
+    </Border>
 </Window>
 

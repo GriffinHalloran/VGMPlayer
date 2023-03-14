@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,19 +12,17 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using System.Xml;
 
 namespace VGMPlayer
 {
     /// <summary>
-    /// Interaction logic for HomePage.xaml
+    /// Interaction logic for SoundtrackPage.xaml
     /// </summary>
-    public partial class HomePage : UserControl
+    public partial class SoundtrackPage : UserControl
     {
-        public HomePage()
+        public SoundtrackPage()
         {
             InitializeComponent();
         }
-
     }
 }

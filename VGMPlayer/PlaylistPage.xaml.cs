@@ -25,13 +25,16 @@ namespace VGMPlayer
     public partial class PlaylistPage : UserControl
     {
         public static List<string> libraryList = new List<string>();
+        public Rename_Window renameWindow;
         public event EventHandler PlaylistDoubleClicked;
         public event EventHandler PlaylistSelected;
         public PlaylistPage()
         {
+            renameWindow = new Rename_Window();
             InitializeComponent();
             CheckLibraryStatus();
             libraryListView.ItemsSource = libraryList;
+            renameWindow.RenameSelected += (s, e) => RenamePlaylist();
         }
 
         // Changes the library order by one to up.
@@ -59,13 +62,13 @@ namespace VGMPlayer
         // Checks songs in new selected library and updates them into currently viewing list.
         private void LibraryListView_DoubleClicked(object sender, MouseButtonEventArgs e)
         {
-                System.Diagnostics.Debug.WriteLine("Playlist clicked"); // Used only for debuggin purposes
                 PlaylistDoubleClicked?.Invoke(this, EventArgs.Empty);
         }
 
         private void RenameLibrary_Click(object sender, RoutedEventArgs e)
         {
             if (libraryListView.SelectedIndex == -1) return;
+            renameWindow.ShowDialog();
         }
 
         // Checks songs in new selected library and updates them into currently viewing list.
@@ -141,6 +144,29 @@ namespace VGMPlayer
                         MessageBox.Show("Error with deleting the library, try again.", "Error");
                     }
                 }
+            }
+        }
+
+        private void RenamePlaylist()
+        {
+            if (libraryListView.Items.Count != 0 && libraryListView.SelectedItem != null && renameWindow.GetTitle().Length > 0)
+            {
+                string playlistPath = $"C:/Users/griff/Desktop/VGM Library/library/";
+                if (Directory.Exists(playlistPath + renameWindow.GetTitle()))
+                {
+                    MessageBox.Show("That is already a playlist name");
+                    return; // Can't rename to a playlist already in the list
+                }
+                if (libraryListView.SelectedItem.ToString() == "Song Collection")
+                {
+                    MessageBox.Show("Can't Rename main library");
+                    return; 
+                }
+                libraryList.RemoveAt(libraryListView.SelectedIndex);
+                System.IO.Directory.Move(playlistPath + libraryListView.SelectedValue.ToString(), playlistPath + renameWindow.GetTitle());
+
+                libraryList.Add(renameWindow.GetTitle());
+                libraryListView.Items.Refresh(); // Refresh the list to update the UI
             }
         }
 

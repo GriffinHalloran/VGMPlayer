@@ -1,0 +1,27 @@
+﻿<UserControl x:Class="VGMPlayer.SoundtrackPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:VGMPlayer"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid Background="#272B2F">
+        <StackPanel Margin="20, 0">
+            <ItemsControl x:Name="ListViewSoundtracks" ItemsSource="{Binding MusicList}" Height="450">
+                <Border Margin="10" Width="110" Height="140">
+                    <StackPanel>
+                        <Border Width="100" Height="100" CornerRadius="5" Margin="5">
+                            <Border.Background>
+                                <ImageBrush ImageSource="C:\Users\griff\source\repos\VGMPlayer\VGMPlayer\Resources\zelda.png"/>
+                            </Border.Background>
+                        </Border>
+                        <TextBlock Margin="5 0" Text="Soundtrack" FontFamily="11" FontSize="14" HorizontalAlignment="Center" FontWeight="Bold"/>
+                    </StackPanel>
+                </Border>
+
+            </ItemsControl>
+
+        </StackPanel>
+    </Grid>
+</UserControl>
