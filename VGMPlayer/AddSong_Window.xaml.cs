@@ -34,13 +34,17 @@ namespace VGMPlayer
         private async void OkButton_Click(object sender, RoutedEventArgs e)
         {
             string youtubeID = songLabel.Text;
+            string songSoundtrack = soundtrack.Text;
 
             if (youtubeID.Length == 0) this.Close(); // Youtube URL/ID can't be null.
+
+            if (songSoundtrack.Length == 0) songSoundtrack = "Unknown";
 
             try // Tries to download audio if valid url/id.
             {
                 var video = await youtube.Videos.GetAsync(youtubeID);
                 var cleanTitle = CleanTitle(video.Title); // Cleans illegal characters to bypass errors
+                var cleanSoundtrack = CleanTitle(songSoundtrack);
                 var duration = video.Duration;
                 var cleanDuration = CleanDuration((TimeSpan)duration); // Converts duration to legal filename e.g (00.37.12) instead of (00:37:12)
                 CheckLibraryStatus(); // Check that root directory exists
@@ -58,14 +62,14 @@ namespace VGMPlayer
                     return;
                 }
 
-                if (File.Exists(libraryPath.ToString() + (this.Owner as MainWindow).PlaylistPage().libraryListView.SelectedValue.ToString() + $"/{cleanTitle} - {cleanDuration}.mp3"))
+                if (File.Exists(libraryPath.ToString() + (this.Owner as MainWindow).PlaylistPage().libraryListView.SelectedValue.ToString() + $"/{cleanTitle} - {cleanSoundtrack} - {cleanDuration}.mp3"))
                 {
                     MessageBox.Show("The song is already in the library", "Error");
                     return;
                 }
 
-                MainWindow.currentlyViewingMusicList.Add(new MusicList { Filename = $"{cleanTitle} - {cleanDuration}.mp3", Title = cleanTitle, Duration = (TimeSpan)duration });
-                var destinationPath = Path.Combine(libraryPath.ToString() + (this.Owner as MainWindow).PlaylistPage().libraryListView.SelectedValue.ToString() + $"/{cleanTitle} - {cleanDuration}.mp3");
+                MainWindow.currentlyViewingMusicList.Add(new MusicList { Filename = $"{cleanTitle} - {cleanSoundtrack} - {cleanDuration}.mp3", Title = cleanTitle, Soundtrack = cleanSoundtrack, Duration = (TimeSpan)duration });
+                var destinationPath = Path.Combine(libraryPath.ToString() + (this.Owner as MainWindow).PlaylistPage().libraryListView.SelectedValue.ToString() + $"/{cleanTitle} - {cleanSoundtrack} - {cleanDuration}.mp3");
 
                 okButton.IsEnabled = false; // Disables buttons to notify user and to keep errors away.
                 closeButton.IsEnabled = false;
@@ -83,9 +87,9 @@ namespace VGMPlayer
                     // Download the stream to file
                     await youtube.Videos.Streams.DownloadAsync(streamInfo, destinationPath);
 
-                    if (!File.Exists(libraryPath + $"/Song Collection/{cleanTitle} - {cleanDuration}.mp3"))
+                    if (!File.Exists(libraryPath + $"/Song Collection/{cleanTitle} - {cleanSoundtrack} - {cleanDuration}.mp3"))
                     {
-                        System.IO.File.Copy(destinationPath, libraryPath + $"/Song Collection/{cleanTitle} - {cleanDuration}.mp3");
+                        System.IO.File.Copy(destinationPath, libraryPath + $"/Song Collection/{cleanTitle} - {cleanSoundtrack} - {cleanDuration}.mp3");
                     }
                 }
 
@@ -115,9 +119,16 @@ namespace VGMPlayer
 
         private void CheckLibraryStatus()
         {
-            if (!Directory.Exists("./library"))
+            var libraryPath = App.Current.Properties["libraryPath"];
+            if (libraryPath.ToString().Length <= 0)
             {
-                Directory.CreateDirectory("./library");
+                MessageBox.Show("Error getting library path");
+                return;
+            }
+
+            if (!Directory.Exists(libraryPath.ToString()))
+            {
+                Directory.CreateDirectory(libraryPath.ToString());
             }
         }
 
@@ -128,7 +139,7 @@ namespace VGMPlayer
 
         private string CleanTitle(string title)
         {
-            return string.Join("_", title.Split(Path.GetInvalidFileNameChars()));
+            return string.Join("_", title.Split(Path.GetInvalidFileNameChars())).Replace('-', '_');
         }
 
         private void songLabel_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)

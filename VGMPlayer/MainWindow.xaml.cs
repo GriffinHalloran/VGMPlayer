@@ -14,6 +14,7 @@ using MessageBox = System.Windows.MessageBox;
 using MahApps.Metro.IconPacks;
 using System.Windows.Controls;
 using System.Windows.Shapes;
+using System.Reflection.Metadata.Ecma335;
 
 namespace VGMPlayer
 {
@@ -29,6 +30,7 @@ namespace VGMPlayer
 
         private bool isPlayingAudio;
         private bool isLooping;
+        private bool renameSoundtrack;
 
         private int currentPlayingIndex;
         private PlaylistPage playlistPage;
@@ -38,7 +40,7 @@ namespace VGMPlayer
 
         public MainWindow()
         { 
-            App.Current.Properties["libraryPath"] = "C:/Users/griff/Desktop/VGM Library/library/test/";
+            App.Current.Properties["libraryPath"] = "C:/Users/griff/Desktop/VGM Library/library/test/tester/";
             DispatcherTimer dt = new DispatcherTimer();
             dt.Interval = TimeSpan.FromSeconds(1);
             dt.Tick += dtTicker;
@@ -46,6 +48,7 @@ namespace VGMPlayer
 
             isPlayingAudio = false;
             isLooping = false;
+            renameSoundtrack = false;
 
             mediaPlayer = new MediaPlayer();
             playlistPage = new PlaylistPage();
@@ -54,7 +57,7 @@ namespace VGMPlayer
 
             playlistPage.PlaylistSelected += (s, e) => EnableSongButton();
             playlistPage.PlaylistDoubleClicked += (s, e) => CheckSongStatus();
-            renameWindow.RenameSelected += (s, e) => RenameSong();
+            renameWindow.RenameSelected += (s, e) => Rename();
 
             InitializeComponent();
 
@@ -141,11 +144,14 @@ namespace VGMPlayer
             {
                 try
                 {
-                    string titleAndDuration = directoryPath.Name.ToString();
-                    string title = titleAndDuration.Substring(0, titleAndDuration.LastIndexOf('-') - 1);
-                    string duration = titleAndDuration.Substring(titleAndDuration.LastIndexOf('-') + 2, 8).Replace('.', ':');
+                    string songInfo = directoryPath.Name.ToString();
+                    int titleIndex = songInfo.IndexOf('-') - 1;
+                    string title = songInfo.Substring(0, titleIndex);
+                    int soundtrackIndex = songInfo.IndexOf('-', titleIndex + 2);
+                    string soundtrack = songInfo.Substring(titleIndex + 3, soundtrackIndex - titleIndex - 4);
+                    string duration = songInfo.Substring(songInfo.LastIndexOf('-') + 2, 8).Replace('.', ':');
 
-                    currentlyViewingMusicList.Add(new MusicList { Filename = $"{title} - {duration.Replace(':', '.')}.mp3", Title = title, Duration = TimeSpan.Parse(duration) });
+                    currentlyViewingMusicList.Add(new MusicList { Filename = $"{title} - {soundtrack} - {duration.Replace(':', '.')}.mp3", Title = title, Soundtrack = soundtrack, Duration = TimeSpan.Parse(duration) });
                 }
 
                 catch (Exception) // Happens if file name doesn't include duration of song.
@@ -158,49 +164,6 @@ namespace VGMPlayer
                     File.Move($"{filePath}/{directoryPath}", $"{filePath}/{title} - {duration.ToString().Replace(':', '.')}.mp3");
                 }
                 addPlaylistButton.IsEnabled = false;
-                musicListView.Items.Refresh();
-            }
-        }
-
-        // Opens the entire collection of songs
-        public void SongCollectionPage()
-        {
-            var libraryPath = App.Current.Properties["libraryPath"].ToString();
-            if (libraryPath.Length <= 0)
-            {
-                MessageBox.Show("Error getting library path");
-                return;
-            }
-
-            CC.Content = null;
-            currentlyViewingMusicList.Clear();
-            musicListView.Items.Refresh();
-            string filePath = libraryPath + "Song Collection/";
-            FileInfo[] files = new DirectoryInfo(filePath) // Gets songs in date added order
-                        .GetFiles("*.mp3")
-                        .OrderBy(f => f.CreationTime)
-                        .ToArray();
-
-            foreach (var directoryPath in files)
-            {
-                try
-                {
-                    string titleAndDuration = directoryPath.Name.ToString();
-                    string title = titleAndDuration.Substring(0, titleAndDuration.LastIndexOf('-') - 1);
-                    string duration = titleAndDuration.Substring(titleAndDuration.LastIndexOf('-') + 2, 8).Replace('.', ':');
-
-                    currentlyViewingMusicList.Add(new MusicList { Filename = $"{title} - {duration.Replace(':', '.')}.mp3", Title = title, Duration = TimeSpan.Parse(duration) });
-                }
-
-                catch (Exception) // Happens if file name doesn't include duration of song.
-                {
-                    Mp3FileReader reader = new Mp3FileReader($"{filePath}/{directoryPath}");
-                    string title = directoryPath.Name.ToString().Remove(directoryPath.Name.ToString().Length - 4);
-                    TimeSpan duration = TimeSpan.Parse(reader.TotalTime.ToString(@"hh\:mm\:ss"));
-                    currentlyViewingMusicList.Add(new MusicList { Filename = $"{title} - {duration.ToString().Replace(':', '.')}.mp3", Title = title, Duration = duration });
-                    reader.Dispose();
-                    File.Move($"{filePath}/{directoryPath}", $"{filePath}/{title} - {duration.ToString().Replace(':', '.')}.mp3");
-                }
                 musicListView.Items.Refresh();
             }
         }
@@ -384,8 +347,9 @@ namespace VGMPlayer
         // For opening song library view
         private void AllSongButton_Click(object sender, RoutedEventArgs e)
         {
-            SongCollectionPage();
             addPlaylistButton.IsEnabled = false;
+            PlaylistPage().libraryListView.SelectedValue = "Song Collection";
+            CheckSongStatus();
         }
 
         public PlaylistPage PlaylistPage()
@@ -504,7 +468,16 @@ namespace VGMPlayer
         }
         private void RenameSongMenuItem_Click(object sender, RoutedEventArgs e)
         {
+            renameSoundtrack = false;
             renameWindow.ShowDialog();
+        }
+
+        private void Rename ()
+        {
+            if (renameSoundtrack)
+                RenameSoundtrack();
+            else
+                RenameSong();
         }
 
         private void RenameSong()
@@ -520,11 +493,40 @@ namespace VGMPlayer
             {
                 string songPath = libraryPath + PlaylistPage().libraryListView.SelectedValue.ToString() + "/";
                 string curSong = currentlyViewingMusicList[musicListView.SelectedIndex].Filename;
-                string title = curSong.Substring(0, curSong.LastIndexOf('-') - 1);
+                int titleIndex = curSong.IndexOf('-') - 1;
+                int soundtrackIndex = curSong.IndexOf('-', titleIndex + 2);
+                string soundtrack = curSong.Substring(titleIndex + 3, soundtrackIndex - titleIndex - 4);
                 string duration = curSong.Substring(curSong.LastIndexOf('-') + 2, 8).Replace('.', ':');
-                System.IO.File.Move(songPath + curSong, songPath + $"{renameWindow.GetTitle()} - {duration.Replace(':', '.')}.mp3");
+                System.IO.File.Move(songPath + curSong, songPath + $"{renameWindow.GetTitle()} - {soundtrack} - {duration.Replace(':', '.')}.mp3");
                 CheckSongStatus();
                 
+            }
+        }
+        private void SetSoundtrackMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            renameSoundtrack = true;
+            renameWindow.ShowDialog();
+        }
+
+        private void RenameSoundtrack()
+        {
+            var libraryPath = App.Current.Properties["libraryPath"].ToString();
+            if (libraryPath.Length <= 0)
+            {
+                MessageBox.Show("Error getting library path");
+                return;
+            }
+
+            if (musicListView.Items.Count != 0 && musicListView.SelectedItem != null && renameWindow.GetTitle().Length > 0)
+            {
+                string songPath = libraryPath + PlaylistPage().libraryListView.SelectedValue.ToString() + "/";
+                string curSong = currentlyViewingMusicList[musicListView.SelectedIndex].Filename;
+                int titleIndex = curSong.IndexOf('-') - 1;
+                string title = curSong.Substring(0, titleIndex);
+                string duration = curSong.Substring(curSong.LastIndexOf('-') + 2, 8).Replace('.', ':');
+                System.IO.File.Move(songPath + curSong, songPath + $"{title} - {renameWindow.GetTitle()} - {duration.Replace(':', '.')}.mp3");
+                CheckSongStatus();
+
             }
         }
     }

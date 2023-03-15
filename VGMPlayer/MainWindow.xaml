@@ -48,12 +48,14 @@
                         <MenuItem Header="Play" Click="PlaySongMenuItem_Click"/>
                         <MenuItem Header="Delete" Click="DeleteSongMenuItem_Click"/>
                         <MenuItem Header="Rename" Click="RenameSongMenuItem_Click"/>
+                        <MenuItem Header="Set Soundtrack" Click = "SetSoundtrackMenuItem_Click"/>
                     </ContextMenu>
                 </ListView.ContextMenu>
 
                 <ListView.View>
                     <GridView ColumnHeaderContainerStyle="{StaticResource GridViewColumnHeader}">
-                        <GridViewColumn Header="Title" Width="630" DisplayMemberBinding="{Binding Path=Title}" />
+                        <GridViewColumn Header="Title" Width="300" DisplayMemberBinding="{Binding Path=Title}" />
+                        <GridViewColumn Header="Soundtrack" Width="300" DisplayMemberBinding="{Binding Path=Soundtrack}" />
                         <GridViewColumn Header="Duration" Width="120" DisplayMemberBinding="{Binding Path=Duration}" />
                     </GridView>
                 </ListView.View>
