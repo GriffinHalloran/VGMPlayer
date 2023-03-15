@@ -113,7 +113,6 @@ namespace VGMPlayer
             this.Close(); // Lastly closes the window
         }
 
-
         private void CheckLibraryStatus()
         {
             if (!Directory.Exists("./library"))

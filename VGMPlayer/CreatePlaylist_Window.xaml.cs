@@ -18,14 +18,6 @@ namespace VGMPlayer
             window.Title = winTitle;
         }
 
-        public CreatePlaylist_Window(string winTitle, string selectedLibrary) // Used for renaming libraries
-        {
-            InitializeComponent();
-
-            window.Title = winTitle;
-            this.selectedLibrary = selectedLibrary;
-        }
-
         private void CreateNewLibrary()
         {
             var libraryPath = App.Current.Properties["libraryPath"];
