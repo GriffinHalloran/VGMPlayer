@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -50,14 +51,21 @@ namespace VGMPlayer
                 songDuration.Text = cleanDuration;
                 songTitle.Text = cleanTitle;
 
-                if (File.Exists($"C:/Users/griff/Desktop/VGM Library/library/{(this.Owner as MainWindow).PlaylistPage().libraryListView.SelectedValue.ToString()}/{cleanTitle} - {cleanDuration}.mp3"))
+                var libraryPath = App.Current.Properties["libraryPath"];
+                if (libraryPath.ToString().Length <= 0)
+                {
+                    MessageBox.Show("Error getting library path");
+                    return;
+                }
+
+                if (File.Exists(libraryPath.ToString() + (this.Owner as MainWindow).PlaylistPage().libraryListView.SelectedValue.ToString() + $"/{cleanTitle} - {cleanDuration}.mp3"))
                 {
                     MessageBox.Show("The song is already in the library", "Error");
                     return;
                 }
 
                 MainWindow.currentlyViewingMusicList.Add(new MusicList { Filename = $"{cleanTitle} - {cleanDuration}.mp3", Title = cleanTitle, Duration = (TimeSpan)duration });
-                var destinationPath = Path.Combine($"C:/Users/griff/Desktop/VGM Library/library/{(this.Owner as MainWindow).PlaylistPage().libraryListView.SelectedValue.ToString()}/{cleanTitle} - {cleanDuration}.mp3");
+                var destinationPath = Path.Combine(libraryPath.ToString() + (this.Owner as MainWindow).PlaylistPage().libraryListView.SelectedValue.ToString() + $"/{cleanTitle} - {cleanDuration}.mp3");
 
                 okButton.IsEnabled = false; // Disables buttons to notify user and to keep errors away.
                 closeButton.IsEnabled = false;
@@ -74,6 +82,11 @@ namespace VGMPlayer
 
                     // Download the stream to file
                     await youtube.Videos.Streams.DownloadAsync(streamInfo, destinationPath);
+
+                    if (!File.Exists(libraryPath + $"/Song Collection/{cleanTitle} - {cleanDuration}.mp3"))
+                    {
+                        System.IO.File.Copy(destinationPath, libraryPath + $"/Song Collection/{cleanTitle} - {cleanDuration}.mp3");
+                    }
                 }
 
                 MainWindow.currentlyPlayingMusicList = new List<MusicList>(MainWindow.currentlyViewingMusicList);

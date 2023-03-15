@@ -10,15 +10,10 @@ using VGMPlayer.Properties;
 
 using NAudio.Wave;
 using System.Windows.Input;
-using System.Windows.Forms;
 using MessageBox = System.Windows.MessageBox;
 using MahApps.Metro.IconPacks;
-using AngleSharp.Dom;
-using Microsoft.VisualBasic.ApplicationServices;
-using static System.Windows.Forms.AxHost;
 using System.Windows.Controls;
 using System.Windows.Shapes;
-using Newtonsoft.Json.Linq;
 
 namespace VGMPlayer
 {
@@ -42,7 +37,8 @@ namespace VGMPlayer
         private Rename_Window renameWindow;
 
         public MainWindow()
-        {
+        { 
+            App.Current.Properties["libraryPath"] = "C:/Users/griff/Desktop/VGM Library/library/test/";
             DispatcherTimer dt = new DispatcherTimer();
             dt.Interval = TimeSpan.FromSeconds(1);
             dt.Tick += dtTicker;
@@ -121,13 +117,21 @@ namespace VGMPlayer
                 isLooping = true;
             }
         }
+
         // Check all songs in selected library.
         public void CheckSongStatus()
         {
+            var libraryPath = App.Current.Properties["libraryPath"].ToString();
+            if (libraryPath.Length <= 0)
+            {
+                MessageBox.Show("Error getting library path");
+                return;
+            }
+
             CC.Content = null;
             currentlyViewingMusicList.Clear();
             musicListView.Items.Refresh();
-            string filePath = $"C:/Users/griff/Desktop/VGM Library/library/{PlaylistPage().libraryListView.SelectedValue.ToString()}/";
+            string filePath = libraryPath + PlaylistPage().libraryListView.SelectedValue.ToString();
             FileInfo[] files = new DirectoryInfo(filePath) // Gets songs in date added order
                         .GetFiles("*.mp3")
                         .OrderBy(f => f.CreationTime)
@@ -153,18 +157,25 @@ namespace VGMPlayer
                     reader.Dispose();
                     File.Move($"{filePath}/{directoryPath}", $"{filePath}/{title} - {duration.ToString().Replace(':', '.')}.mp3");
                 }
+                addPlaylistButton.IsEnabled = false;
                 musicListView.Items.Refresh();
             }
         }
 
-        // Check all songs in selected library.
+        // Opens the entire collection of songs
         public void SongCollectionPage()
         {
-            Console.WriteLine("Song Page"); // Used only for debuggin purposes
+            var libraryPath = App.Current.Properties["libraryPath"].ToString();
+            if (libraryPath.Length <= 0)
+            {
+                MessageBox.Show("Error getting library path");
+                return;
+            }
+
             CC.Content = null;
             currentlyViewingMusicList.Clear();
             musicListView.Items.Refresh();
-            string filePath = "C:/Users/griff/Desktop/VGM Library/library/Song Collection/";
+            string filePath = libraryPath + "Song Collection/";
             FileInfo[] files = new DirectoryInfo(filePath) // Gets songs in date added order
                         .GetFiles("*.mp3")
                         .OrderBy(f => f.CreationTime)
@@ -196,6 +207,13 @@ namespace VGMPlayer
 
         private void SkipForward()
         {
+            var libraryPath = App.Current.Properties["libraryPath"].ToString();
+            if (libraryPath.Length <= 0)
+            {
+                MessageBox.Show("Error getting library path");
+                return;
+            }
+
             if (currentPlayingIndex == currentlyPlayingMusicList.Count - 1) // If last song in list, then pause.
             {
                 PauseAudio();
@@ -206,7 +224,7 @@ namespace VGMPlayer
             }
 
             currentPlayingIndex++;
-            var mediaFile = new Uri($"C:/Users/griff/Desktop/VGM Library/library/{PlaylistPage().libraryListView.SelectedValue.ToString()}/{currentlyPlayingMusicList[currentPlayingIndex].Filename}");
+            var mediaFile = new Uri(libraryPath + PlaylistPage().libraryListView.SelectedValue.ToString() + "/" + currentlyPlayingMusicList[currentPlayingIndex].Filename);
             mediaPlayer.Open(mediaFile);
             audioPositionSlider.Maximum = currentlyPlayingMusicList[currentPlayingIndex].Duration.TotalSeconds;
             if (isPlayingAudio)
@@ -220,6 +238,13 @@ namespace VGMPlayer
 
         private void SkipBackward()
         {
+            var libraryPath = App.Current.Properties["libraryPath"].ToString();
+            if (libraryPath.Length <= 0)
+            {
+                MessageBox.Show("Error getting library path");
+                return;
+            }
+
             if (currentPlayingIndex == 0) // If the first item, then doesn't accept to go negative.
             {
                 PauseAudio();
@@ -230,7 +255,7 @@ namespace VGMPlayer
             }
 
             currentPlayingIndex--;
-            var mediaFile = new Uri($"C:/Users/griff/Desktop/VGM Library/library/{PlaylistPage().libraryListView.SelectedValue.ToString()}/{currentlyPlayingMusicList[currentPlayingIndex].Filename}");
+            var mediaFile = new Uri(libraryPath + PlaylistPage().libraryListView.SelectedValue.ToString() + "/" + currentlyPlayingMusicList[currentPlayingIndex].Filename);
             mediaPlayer.Open(mediaFile);
             audioPositionSlider.Maximum = currentlyPlayingMusicList[currentPlayingIndex].Duration.TotalSeconds;
             if (isPlayingAudio)
@@ -244,6 +269,13 @@ namespace VGMPlayer
 
         private void PlayAudio()
         {
+            var libraryPath = App.Current.Properties["libraryPath"].ToString();
+            if (libraryPath.Length <= 0)
+            {
+                MessageBox.Show("Error getting library path");
+                return;
+            }
+
             if (musicListView.Items.Count != 0 && musicListView.SelectedItem != null)
             {
                 if (currentPlayingLabel.Content.ToString() != currentlyViewingMusicList[musicListView.SelectedIndex].Title)
@@ -253,7 +285,7 @@ namespace VGMPlayer
                     currentlyPlayingMusicList = new List<MusicList>(currentlyViewingMusicList);
                     currentPlayingIndex = musicListView.SelectedIndex;
                     currentPlayingLabel.Content = currentlyPlayingMusicList[currentPlayingIndex].Title;
-                    var mediaFile = new Uri($"C:/Users/griff/Desktop/VGM Library/library/{PlaylistPage().libraryListView.SelectedValue.ToString()}/{currentlyPlayingMusicList[currentPlayingIndex].Filename}");
+                    var mediaFile = new Uri(libraryPath + PlaylistPage().libraryListView.SelectedValue.ToString() + "/" + currentlyPlayingMusicList[currentPlayingIndex].Filename);
                     mediaPlayer.Open(mediaFile);
                     audioPositionSlider.Maximum = currentlyPlayingMusicList[currentPlayingIndex].Duration.TotalSeconds;
                 }
@@ -348,6 +380,7 @@ namespace VGMPlayer
             addSongButton.IsEnabled = false;
             addPlaylistButton.IsEnabled = false;
         }
+
         // For opening song library view
         private void AllSongButton_Click(object sender, RoutedEventArgs e)
         {
@@ -355,11 +388,11 @@ namespace VGMPlayer
             addPlaylistButton.IsEnabled = false;
         }
 
-
         public PlaylistPage PlaylistPage()
         {
             return this.playlistPage;
         }
+
         public HomePage HomePage()
         {
             return this.homePage;
@@ -370,19 +403,9 @@ namespace VGMPlayer
             return this.soundtrackPage;
         }
 
-        public void DisableSongButton()
-        {
-            addSongButton.IsEnabled = false;
-        }
-
         public void EnableSongButton()
         {
             addSongButton.IsEnabled = true;
-        }
-
-        private void MusicListView_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
-        {
-            Console.WriteLine("MusicListView_SelectionChanged"); // Used only for debuggin purposes
         }
 
         private void PlayMenuItem_Click(object sender, RoutedEventArgs e)
@@ -455,9 +478,16 @@ namespace VGMPlayer
 
         private void DeleteSongItem()
         {
+            var libraryPath = App.Current.Properties["libraryPath"].ToString();
+            if (libraryPath.Length <= 0)
+            {
+                MessageBox.Show("Error getting library path");
+                return;
+            } 
+
             if (musicListView.SelectedIndex == -1) return;
 
-            string songPath = $"C:/Users/griff/Desktop/VGM Library/library/{PlaylistPage().libraryListView.SelectedValue.ToString()}/{currentlyViewingMusicList[musicListView.SelectedIndex].Filename}";
+            string songPath = libraryPath + PlaylistPage().libraryListView.SelectedValue.ToString() + "/" + currentlyViewingMusicList[musicListView.SelectedIndex].Filename;
 
             if (currentlyPlayingMusicList.SequenceEqual(currentlyViewingMusicList) && currentPlayingLabel.Content.ToString().Length != 0)
             {
@@ -479,9 +509,16 @@ namespace VGMPlayer
 
         private void RenameSong()
         {
+            var libraryPath = App.Current.Properties["libraryPath"].ToString();
+            if (libraryPath.Length <= 0)
+            {
+                MessageBox.Show("Error getting library path");
+                return;
+            }
+
             if (musicListView.Items.Count != 0 && musicListView.SelectedItem != null && renameWindow.GetTitle().Length > 0)
             {
-                string songPath = $"C:/Users/griff/Desktop/VGM Library/library/{PlaylistPage().libraryListView.SelectedValue.ToString()}/";
+                string songPath = libraryPath + PlaylistPage().libraryListView.SelectedValue.ToString() + "/";
                 string curSong = currentlyViewingMusicList[musicListView.SelectedIndex].Filename;
                 string title = curSong.Substring(0, curSong.LastIndexOf('-') - 1);
                 string duration = curSong.Substring(curSong.LastIndexOf('-') + 2, 8).Replace('.', ':');

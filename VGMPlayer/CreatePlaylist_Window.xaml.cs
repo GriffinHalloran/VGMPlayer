@@ -28,13 +28,19 @@ namespace VGMPlayer
 
         private void CreateNewLibrary()
         {
+            var libraryPath = App.Current.Properties["libraryPath"];
+            if (libraryPath.ToString().Length <= 0)
+            {
+                MessageBox.Show("Error getting library path");
+                return;
+            }
+
             var libraryName = nameLabel.Text;
-            string currentPath = "C:/Users/griff/Desktop/VGM Library"; ;
-            if (!Directory.Exists(currentPath + "/library/" + libraryName)) // Checks if library already exists with that name
+            if (!Directory.Exists(libraryPath + libraryName)) // Checks if library already exists with that name
             {
                 PlaylistPage.libraryList.Add(libraryName);
 
-                Directory.CreateDirectory(currentPath + "/library/" + libraryName);
+                Directory.CreateDirectory(libraryPath + libraryName);
                 (Owner as MainWindow).PlaylistPage().libraryListView.Items.Refresh();
                 Application.Current.MainWindow.Focus();
 
@@ -58,13 +64,19 @@ namespace VGMPlayer
         {
             if (nameLabel.Text == selectedLibrary) return;
 
+            var libraryPath = App.Current.Properties["libraryPath"];
+            if (libraryPath.ToString().Length <= 0)
+            {
+                MessageBox.Show("Error getting library path");
+                return;
+            }
+
             var libraryName = nameLabel.Text;
-            string currentPath = "C:/Users/griff/Desktop/VGM Library";
-            if (!Directory.Exists(currentPath + "/library/" + libraryName)) // Checks if library already exists with that name
+            if (!Directory.Exists(libraryPath + libraryName)) // Checks if library already exists with that name
             {
                 try
                 {
-                    Directory.Move(currentPath + "/library/" + selectedLibrary, currentPath + "/library/" + libraryName); // Renames the directory.
+                    Directory.Move(libraryPath + selectedLibrary, libraryPath + libraryName); // Renames the directory.
 
                     PlaylistPage.libraryList[(Owner as MainWindow).PlaylistPage().libraryListView.SelectedIndex] = libraryName;
                     (Owner as MainWindow).PlaylistPage().libraryListView.Items.Refresh();

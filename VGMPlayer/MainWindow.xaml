@@ -5,7 +5,6 @@
         xmlns:Icon="http://metro.mahapps.com/winfx/xaml/iconpacks"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:VGMPlayer"
-        mc:Ignorable="d"
         Title="Media Player"
         Background="#272B2F"
         Height="700" Width="1050"
@@ -23,7 +22,7 @@
                 <RowDefinition Height="100"/>
             </Grid.RowDefinitions>
 
-
+            <!--Music List -->
             <ListView x:Name="musicListView"
                   Grid.Column="1"
                   Margin= "0, 60, 30, 0"
@@ -33,7 +32,7 @@
                   Background="Black"
                   BorderThickness="2"
                   BorderBrush="Black"
-                  SelectionChanged="MusicListView_SelectionChanged" Grid.ColumnSpan="2">
+                  Grid.ColumnSpan="2">
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <Setter Property="Foreground" Value="Black"/>
@@ -61,8 +60,8 @@
             </ListView>
 
             <ContentControl x:Name="CC" Grid.Column="1"/>
-
-            <!--Menu-->
+            
+            <!--Side Menu-->
             <Border Background="#272B2F" CornerRadius="40 0 0 40" Grid.RowSpan="2">
                 <StackPanel Margin="0 30 0 0">
                     <!--Ellipses-->

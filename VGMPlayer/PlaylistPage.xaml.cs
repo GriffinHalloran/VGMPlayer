@@ -84,8 +84,14 @@ namespace VGMPlayer
                 MessageBox.Show("Cannot Delete Main Library.", "Error");
                 return;
             }
-            string currentPath = "C:/Users/griff/Desktop/VGM Library";
-            Directory.Delete(currentPath + "/library/" + libraryListView.SelectedValue.ToString(), true); // Deletes the directory and all the files inside it.
+            var libraryPath = App.Current.Properties["libraryPath"];
+            if (libraryPath.ToString().Length <= 0)
+            {
+                MessageBox.Show("Error getting library path");
+                return;
+            }
+
+            Directory.Delete(libraryPath.ToString() + libraryListView.SelectedValue.ToString(), true); // Deletes the directory and all the files inside it.
 
             libraryList.RemoveAt(libraryListView.SelectedIndex);
             libraryListView.Items.Refresh();
@@ -94,16 +100,22 @@ namespace VGMPlayer
         // Check for music libraries in root library directory.
         private void CheckLibraryStatus()
         {
-            string currentPath = "C:/Users/griff/Desktop/VGM Library";
-            if (!Directory.Exists(currentPath + "/library")) // Creates a root directory for all music libraries.
+            var libraryPath = App.Current.Properties["libraryPath"];
+            if (libraryPath.ToString().Length <= 0)
             {
-                Directory.CreateDirectory(currentPath + "/library");
+                MessageBox.Show("Error getting library path");
+                return;
             }
-            if (!Directory.Exists(currentPath + "/library/Song Collection")) // Creates a root directory for all music libraries.
+
+            if (!Directory.Exists(libraryPath.ToString())) // Creates a root directory for all music libraries.
             {
-                Directory.CreateDirectory(currentPath + "/library/Song Collection");
+                Directory.CreateDirectory(libraryPath.ToString());
             }
-            var di = new DirectoryInfo(currentPath + "/library");
+            if (!Directory.Exists(libraryPath.ToString() + "/Song Collection")) // Creates a root directory for all music libraries.
+            {
+                Directory.CreateDirectory(libraryPath.ToString() + "/Song Collection");
+            }
+            var di = new DirectoryInfo(libraryPath.ToString());
             Console.WriteLine(Directory.GetCurrentDirectory()); // Used only for debuggin purposes
             var directories = di.EnumerateDirectories() // Gets directories in date added order
                                 .OrderBy(d => d.CreationTime)
@@ -118,12 +130,19 @@ namespace VGMPlayer
         private void DeleteLibrary_Click(object sender, RoutedEventArgs e)
         {
             if (libraryListView.SelectedIndex == -1) return;
-            string currentPath = "C:/Users/griff/Desktop/VGM Library";
 
-            if (!Directory.Exists(currentPath + "/library/" + libraryListView.SelectedValue.ToString())) return; // Can't delete library that doesn't exist.
+            var libraryPath = App.Current.Properties["libraryPath"];
+            if (libraryPath.ToString().Length <= 0)
+            {
+                MessageBox.Show("Error getting library path");
+                return;
+            }
+            string currentPath = libraryPath.ToString();
+
+            if (!Directory.Exists(libraryPath + libraryListView.SelectedValue.ToString())) return; // Can't delete library that doesn't exist.
 
 
-            if (Directory.GetFileSystemEntries(currentPath + "/library/" + libraryListView.SelectedValue.ToString()).Length == 0) // If no songs in the list else warning
+            if (Directory.GetFileSystemEntries(libraryPath + libraryListView.SelectedValue.ToString()).Length == 0) // If no songs in the list else warning
             {
                 DeleteLibraryItem();
             }
@@ -151,8 +170,14 @@ namespace VGMPlayer
         {
             if (libraryListView.Items.Count != 0 && libraryListView.SelectedItem != null && renameWindow.GetTitle().Length > 0)
             {
-                string playlistPath = $"C:/Users/griff/Desktop/VGM Library/library/";
-                if (Directory.Exists(playlistPath + renameWindow.GetTitle()))
+                var libraryPath = App.Current.Properties["libraryPath"];
+                if (libraryPath.ToString().Length <= 0)
+                {
+                    MessageBox.Show("Error getting library path");
+                    return;
+                }
+
+                if (Directory.Exists(libraryPath.ToString() + renameWindow.GetTitle()))
                 {
                     MessageBox.Show("That is already a playlist name");
                     return; // Can't rename to a playlist already in the list
@@ -163,7 +188,7 @@ namespace VGMPlayer
                     return; 
                 }
                 libraryList.RemoveAt(libraryListView.SelectedIndex);
-                System.IO.Directory.Move(playlistPath + libraryListView.SelectedValue.ToString(), playlistPath + renameWindow.GetTitle());
+                System.IO.Directory.Move(libraryPath.ToString() + libraryListView.SelectedValue.ToString(), libraryPath.ToString() + renameWindow.GetTitle());
 
                 libraryList.Add(renameWindow.GetTitle());
                 libraryListView.Items.Refresh(); // Refresh the list to update the UI
