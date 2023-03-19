@@ -47,8 +47,8 @@
                     <ContextMenu>
                         <MenuItem Header="Play" Click="PlaySongMenuItem_Click"/>
                         <MenuItem Header="Delete" Click="DeleteSongMenuItem_Click"/>
-                        <MenuItem Header="Rename" Click="RenameSongMenuItem_Click"/>
-                        <MenuItem Header="Set Soundtrack" Click = "SetSoundtrackMenuItem_Click"/>
+                        <MenuItem Header="Rename Song" Click="RenameSongMenuItem_Click"/>
+                        <MenuItem Header="Rename Soundtrack" Click = "SetSoundtrackMenuItem_Click"/>
                     </ContextMenu>
                 </ListView.ContextMenu>
 

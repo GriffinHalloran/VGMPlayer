@@ -40,7 +40,7 @@ namespace VGMPlayer
 
         public MainWindow()
         { 
-            App.Current.Properties["libraryPath"] = "C:/Users/griff/Desktop/VGM Library/library/test/tester/";
+            App.Current.Properties["libraryPath"] = "C:/Users/griff/Desktop/VGM Library/library/";
             DispatcherTimer dt = new DispatcherTimer();
             dt.Interval = TimeSpan.FromSeconds(1);
             dt.Tick += dtTicker;
@@ -53,10 +53,12 @@ namespace VGMPlayer
             mediaPlayer = new MediaPlayer();
             playlistPage = new PlaylistPage();
             homePage = new HomePage();
+            soundtrackPage = new SoundtrackPage();
             renameWindow = new Rename_Window();
 
             playlistPage.PlaylistSelected += (s, e) => EnableSongButton();
             playlistPage.PlaylistDoubleClicked += (s, e) => CheckSongStatus();
+            soundtrackPage.SoundtrackDoubleClicked += (s, e) => CheckSoundtrackStatus();
             renameWindow.RenameSelected += (s, e) => Rename();
 
             InitializeComponent();
@@ -135,6 +137,53 @@ namespace VGMPlayer
             currentlyViewingMusicList.Clear();
             musicListView.Items.Refresh();
             string filePath = libraryPath + PlaylistPage().libraryListView.SelectedValue.ToString();
+            FileInfo[] files = new DirectoryInfo(filePath) // Gets songs in date added order
+                        .GetFiles("*.mp3")
+                        .OrderBy(f => f.CreationTime)
+                        .ToArray();
+
+            foreach (var directoryPath in files)
+            {
+                try
+                {
+                    string songInfo = directoryPath.Name.ToString();
+                    int titleIndex = songInfo.IndexOf('-') - 1;
+                    string title = songInfo.Substring(0, titleIndex);
+                    int soundtrackIndex = songInfo.IndexOf('-', titleIndex + 2);
+                    string soundtrack = songInfo.Substring(titleIndex + 3, soundtrackIndex - titleIndex - 4);
+                    string duration = songInfo.Substring(songInfo.LastIndexOf('-') + 2, 8).Replace('.', ':');
+
+                    currentlyViewingMusicList.Add(new MusicList { Filename = $"{title} - {soundtrack} - {duration.Replace(':', '.')}.mp3", Title = title, Soundtrack = soundtrack, Duration = TimeSpan.Parse(duration) });
+                }
+
+                catch (Exception) // Happens if file name doesn't include duration of song.
+                {
+                    Mp3FileReader reader = new Mp3FileReader($"{filePath}/{directoryPath}");
+                    string title = directoryPath.Name.ToString().Remove(directoryPath.Name.ToString().Length - 4);
+                    TimeSpan duration = TimeSpan.Parse(reader.TotalTime.ToString(@"hh\:mm\:ss"));
+                    currentlyViewingMusicList.Add(new MusicList { Filename = $"{title} - {duration.ToString().Replace(':', '.')}.mp3", Title = title, Duration = duration });
+                    reader.Dispose();
+                    File.Move($"{filePath}/{directoryPath}", $"{filePath}/{title} - {duration.ToString().Replace(':', '.')}.mp3");
+                }
+                addPlaylistButton.IsEnabled = false;
+                musicListView.Items.Refresh();
+            }
+        }
+
+        // Check all songs in selected soundtrack.
+        public void CheckSoundtrackStatus()
+        {
+            var libraryPath = App.Current.Properties["libraryPath"].ToString();
+            if (libraryPath.Length <= 0)
+            {
+                MessageBox.Show("Error getting library path");
+                return;
+            }
+
+            CC.Content = null;
+            currentlyViewingMusicList.Clear();
+            musicListView.Items.Refresh();
+            string filePath = libraryPath + "soundtracks/" + SoundtrackPage().SoundtrackListView.SelectedValue.ToString();
             FileInfo[] files = new DirectoryInfo(filePath) // Gets songs in date added order
                         .GetFiles("*.mp3")
                         .OrderBy(f => f.CreationTime)
@@ -339,7 +388,7 @@ namespace VGMPlayer
         // For opening playlist view
         private void SoundtrackButton_Click(object sender, RoutedEventArgs e)
         {
-            //CC.Content = SoundtrackPage();
+            CC.Content = SoundtrackPage();
             addSongButton.IsEnabled = false;
             addPlaylistButton.IsEnabled = false;
         }

@@ -116,7 +116,6 @@ namespace VGMPlayer
                 Directory.CreateDirectory(libraryPath.ToString() + "/Song Collection");
             }
             var di = new DirectoryInfo(libraryPath.ToString());
-            Console.WriteLine(Directory.GetCurrentDirectory()); // Used only for debuggin purposes
             var directories = di.EnumerateDirectories() // Gets directories in date added order
                                 .OrderBy(d => d.CreationTime)
                                 .Select(d => d.Name)

@@ -7,21 +7,45 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid Background="#272B2F">
-        <StackPanel Margin="20, 0">
-            <ItemsControl x:Name="ListViewSoundtracks" ItemsSource="{Binding MusicList}" Height="450">
-                <Border Margin="10" Width="110" Height="140">
-                    <StackPanel>
-                        <Border Width="100" Height="100" CornerRadius="5" Margin="5">
-                            <Border.Background>
-                                <ImageBrush ImageSource="C:\Users\griff\source\repos\VGMPlayer\VGMPlayer\Resources\zelda.png"/>
-                            </Border.Background>
+        <ListView x:Name="SoundtrackListView" ItemsSource="{Binding Soundtrack}"
+                  Margin="5, 5, 5, 50"
+                  Background="#272B2F"
+                  ScrollViewer.VerticalScrollBarVisibility="Auto"
+                  BorderBrush="Black"
+                  BorderThickness="3"
+                  SelectedValuePath="Name"
+                  SelectedValue="{Binding Name}"
+                  SelectionChanged="SoundtrackListView_SelectionChanged">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Margin="10" Width="110" Height="140" BorderBrush="Black" BorderThickness="3">
+                            <StackPanel>
+                            <Border Width="100" Height="100" CornerRadius="5" Margin="5">
+                                <Image Source ="{Binding TemplateImage}"/>
+                            </Border>
+                            <Rectangle x:Name="rectangle1" Height="3" Fill="Black" Stroke="Black"/>
+                            <TextBlock Margin="5 0" Text="{Binding Name}" FontFamily="11" FontSize="14" HorizontalAlignment="Center" FontWeight="Bold"/>
+                            </StackPanel>
                         </Border>
-                        <TextBlock Margin="5 0" Text="Soundtrack" FontFamily="11" FontSize="14" HorizontalAlignment="Center" FontWeight="Bold"/>
-                    </StackPanel>
-                </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <EventSetter Event="MouseDoubleClick" Handler="SoundtrackListView_DoubleClicked" />
+                </Style>
+            </ListView.ItemContainerStyle>
 
-            </ItemsControl>
-
-        </StackPanel>
+            <ListView.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Rename" Click="RenameSoundtrack_Click"/>
+                    <MenuItem Header="Add Image" Click="AddImage_Click"/>
+                </ContextMenu>
+            </ListView.ContextMenu>
+        </ListView>
     </Grid>
 </UserControl>
