@@ -18,10 +18,13 @@ namespace VGMPlayer
     public partial class AddSong_Window : Window
     {
         private YoutubeClient youtube;
+        public event EventHandler SongAdded;
+        private string song;
 
         public AddSong_Window()
         {
             youtube = new YoutubeClient();
+            song = "N/A";
 
             InitializeComponent();
         }
@@ -33,7 +36,7 @@ namespace VGMPlayer
 
         private async void OkButton_Click(object sender, RoutedEventArgs e)
         {
-            string youtubeID = songLabel.Text;
+            string youtubeID = songURL.Text;
             string songSoundtrack = soundtrack.Text;
 
             if (youtubeID.Length == 0) this.Close(); // Youtube URL/ID can't be null.
@@ -43,7 +46,7 @@ namespace VGMPlayer
             try // Tries to download audio if valid url/id.
             {
                 var video = await youtube.Videos.GetAsync(youtubeID);
-                var cleanTitle = CleanTitle(video.Title); // Cleans illegal characters to bypass errors
+                var cleanTitle = CleanTitle(songLabel.Text); // Cleans illegal characters to bypass errors
                 var cleanSoundtrack = CleanTitle(songSoundtrack);
                 var duration = video.Duration;
                 var cleanDuration = CleanDuration((TimeSpan)duration); // Converts duration to legal filename e.g (00.37.12) instead of (00:37:12)
@@ -55,21 +58,21 @@ namespace VGMPlayer
                 songDuration.Text = cleanDuration;
                 songTitle.Text = cleanTitle;
 
-                var libraryPath = App.Current.Properties["libraryPath"];
-                if (libraryPath.ToString().Length <= 0)
+                string libraryPath = App.Current.Properties["libraryPath"].ToString();
+                if (libraryPath.Length <= 0)
                 {
                     MessageBox.Show("Error getting library path");
                     return;
                 }
 
-                if (File.Exists(libraryPath.ToString() + (this.Owner as MainWindow).PlaylistPage().libraryListView.SelectedValue.ToString() + $"/{cleanTitle} - {cleanSoundtrack} - {cleanDuration}.mp3"))
+                if (File.Exists(libraryPath + $"Song Collection/{cleanTitle} - {cleanSoundtrack} - {cleanDuration}.mp3"))
                 {
                     MessageBox.Show("The song is already in the library", "Error");
                     return;
                 }
 
                 MainWindow.currentlyViewingMusicList.Add(new MusicList { Filename = $"{cleanTitle} - {cleanSoundtrack} - {cleanDuration}.mp3", Title = cleanTitle, Soundtrack = cleanSoundtrack, Duration = (TimeSpan)duration });
-                var destinationPath = Path.Combine(libraryPath.ToString() + (this.Owner as MainWindow).PlaylistPage().libraryListView.SelectedValue.ToString() + $"/{cleanTitle} - {cleanSoundtrack} - {cleanDuration}.mp3");
+                var destinationPath = Path.Combine(libraryPath + $"Song Collection/{cleanTitle} - {cleanSoundtrack} - {cleanDuration}.mp3");
 
                 okButton.IsEnabled = false; // Disables buttons to notify user and to keep errors away.
                 closeButton.IsEnabled = false;
@@ -86,16 +89,23 @@ namespace VGMPlayer
 
                     // Download the stream to file
                     await youtube.Videos.Streams.DownloadAsync(streamInfo, destinationPath);
-
-                    if (!File.Exists(libraryPath + $"/Song Collection/{cleanTitle} - {cleanSoundtrack} - {cleanDuration}.mp3"))
-                    {
-                        System.IO.File.Copy(destinationPath, libraryPath + $"/Song Collection/{cleanTitle} - {cleanSoundtrack} - {cleanDuration}.mp3");
-                    }
                 }
 
                 MainWindow.currentlyPlayingMusicList = new List<MusicList>(MainWindow.currentlyViewingMusicList);
-                (this.Owner as MainWindow).musicListView.Items.Refresh();
-                (this.Owner as MainWindow).PlaylistPage().libraryListView.Items.Refresh(); // Refresh libraryListView to make sure song is added to list and is visible.
+                song = $"{cleanTitle} - {cleanSoundtrack} - {cleanDuration}.mp3";
+                SongAdded?.Invoke(this, EventArgs.Empty);
+                songLabel.Text = "";
+                soundtrack.Text = "";
+                downloadingLabel.Visibility = Visibility.Collapsed;
+                titleLabel.Visibility = Visibility.Collapsed;
+                songDurationLabel.Visibility = Visibility.Collapsed;
+                rectangle2.Visibility = Visibility.Collapsed;
+                rectangle3.Visibility = Visibility.Collapsed;
+                songDuration.Text = "";
+                songTitle.Text = "";
+                okButton.IsEnabled = true; // Disables buttons to notify user and to keep errors away.
+                closeButton.IsEnabled = true;
+                songLabel.IsEnabled = true;
             }
             catch (IOException)
             {
@@ -114,7 +124,7 @@ namespace VGMPlayer
                 MessageBox.Show("Invalid Youtube video id or url2323.", er.ToString());
             }
 
-            this.Close(); // Lastly closes the window
+            this.Hide(); // Lastly hide the window
         }
 
         private void CheckLibraryStatus()
@@ -145,6 +155,17 @@ namespace VGMPlayer
         private void songLabel_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
 
+        }
+
+        public string songPath ()
+        {
+            if (this.song != "N/A")
+                 return this.song;
+            else
+            {
+                MessageBox.Show("This should not happen");
+                return "";
+            }
         }
     }
 }

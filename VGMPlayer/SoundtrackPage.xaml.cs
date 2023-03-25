@@ -107,6 +107,7 @@ namespace VGMPlayer
             {
                 SoundtrackListView.ItemsSource = soundtrackList;
                 SoundtrackListView.Items.Refresh();
+                Application.Current.MainWindow.Focus();
             }
         }
 

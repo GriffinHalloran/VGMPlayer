@@ -36,6 +36,7 @@ namespace VGMPlayer
 
             this.rename= libraryName;
             RenameSelected?.Invoke(libraryName, EventArgs.Empty);
+            songTitle.Text = "";
             this.Hide();
         }
     }

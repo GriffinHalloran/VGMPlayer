@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="Playlist"
+    targetNamespace="http://tempuri.org/Playlist.xsd"
+    elementFormDefault="qualified"
+    xmlns="http://tempuri.org/Playlist.xsd"
+    xmlns:mstns="http://tempuri.org/Playlist.xsd"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="Root">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="songPath" type="xs:string" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="label" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
+

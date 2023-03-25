@@ -16,6 +16,13 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Application = System.Windows.Forms.Application;
 using System.Xml;
+using System.Xml.Linq;
+using System;
+using System.Xml;
+using System.Xml.Schema;
+using System.IO;
+using Microsoft.VisualBasic.ApplicationServices;
+using YoutubeExplode.Playlists;
 
 namespace VGMPlayer
 {
@@ -35,6 +42,22 @@ namespace VGMPlayer
             CheckLibraryStatus();
             libraryListView.ItemsSource = libraryList;
             renameWindow.RenameSelected += (s, e) => RenamePlaylist();
+
+            var libraryPath = App.Current.Properties["libraryPath"];
+            if (libraryPath.ToString().Length <= 0)
+            {
+                MessageBox.Show("Error getting library path");
+                return;
+            }
+
+            if (!Directory.Exists(libraryPath.ToString())) // Creates a root directory for all music libraries
+                Directory.CreateDirectory(libraryPath.ToString());
+
+            if (!Directory.Exists(libraryPath.ToString() + "/Song Collection")) // Creates a directory for music files
+                Directory.CreateDirectory(libraryPath.ToString() + "/Song Collection");
+
+            if (!Directory.Exists(libraryPath.ToString() + "playlists/")) // Creates a directory for playlists
+                Directory.CreateDirectory(libraryPath.ToString() + "playlists/");
         }
 
         // Changes the library order by one to up.
@@ -77,52 +100,19 @@ namespace VGMPlayer
             PlaylistSelected?.Invoke(this, EventArgs.Empty);
         }
 
-        private void DeleteLibraryItem()
-        {
-            if (libraryListView.SelectedValue.ToString() == "Song Collection")
-            {
-                MessageBox.Show("Cannot Delete Main Library.", "Error");
-                return;
-            }
-            var libraryPath = App.Current.Properties["libraryPath"];
-            if (libraryPath.ToString().Length <= 0)
-            {
-                MessageBox.Show("Error getting library path");
-                return;
-            }
-
-            Directory.Delete(libraryPath.ToString() + libraryListView.SelectedValue.ToString(), true); // Deletes the directory and all the files inside it.
-
-            libraryList.RemoveAt(libraryListView.SelectedIndex);
-            libraryListView.Items.Refresh();
-        }
-
         // Check for music libraries in root library directory.
         private void CheckLibraryStatus()
         {
             var libraryPath = App.Current.Properties["libraryPath"];
-            if (libraryPath.ToString().Length <= 0)
-            {
-                MessageBox.Show("Error getting library path");
-                return;
-            }
 
-            if (!Directory.Exists(libraryPath.ToString())) // Creates a root directory for all music libraries.
+            var files = Directory.GetFiles(libraryPath + "playlists", "*.xml", SearchOption.AllDirectories);
+
+            foreach (var xml in files)
             {
-                Directory.CreateDirectory(libraryPath.ToString());
-            }
-            if (!Directory.Exists(libraryPath.ToString() + "/Song Collection")) // Creates a root directory for all music libraries.
-            {
-                Directory.CreateDirectory(libraryPath.ToString() + "/Song Collection");
-            }
-            var di = new DirectoryInfo(libraryPath.ToString());
-            var directories = di.EnumerateDirectories() // Gets directories in date added order
-                                .OrderBy(d => d.CreationTime)
-                                .Select(d => d.Name)
-                                .ToList();
-            foreach (var dir in directories)
-            {
-                libraryList.Add(dir);
+                XDocument document = XDocument.Load(xml);
+
+                string name = document.Root.Attribute("Name").Value;
+                libraryList.Add(name);
             }
         }
 
@@ -130,64 +120,35 @@ namespace VGMPlayer
         {
             if (libraryListView.SelectedIndex == -1) return;
 
-            var libraryPath = App.Current.Properties["libraryPath"];
-            if (libraryPath.ToString().Length <= 0)
-            {
-                MessageBox.Show("Error getting library path");
-                return;
-            }
-            string currentPath = libraryPath.ToString();
+            string libraryPath = App.Current.Properties["libraryPath"].ToString();
+            var libraryName = "playlists/" + libraryListView.SelectedValue.ToString() + ".xml";
 
-            if (!Directory.Exists(libraryPath + libraryListView.SelectedValue.ToString())) return; // Can't delete library that doesn't exist.
+            if (File.Exists(libraryPath.ToString() + libraryName)) // Checks if playlist xml already exists with that name
+                File.Delete(libraryPath.ToString() + "playlists/" + libraryListView.SelectedValue.ToString() + ".xml"); // Deletes the directory and all the files inside it.
 
-
-            if (Directory.GetFileSystemEntries(libraryPath + libraryListView.SelectedValue.ToString()).Length == 0) // If no songs in the list else warning
-            {
-                DeleteLibraryItem();
-            }
-            else
-            {
-                if (MessageBox.Show("Are you sure you want to delete the library?", "Media Player", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.No)
-                {
-                    return;
-                }
-                else
-                {
-                    try
-                    {
-                        DeleteLibraryItem();
-                    }
-                    catch (InvalidOperationException)
-                    {
-                        MessageBox.Show("Error with deleting the library, try again.", "Error");
-                    }
-                }
-            }
+            libraryList.RemoveAt(libraryListView.SelectedIndex);
+            libraryListView.Items.Refresh();
         }
 
         private void RenamePlaylist()
         {
             if (libraryListView.Items.Count != 0 && libraryListView.SelectedItem != null && renameWindow.GetTitle().Length > 0)
             {
-                var libraryPath = App.Current.Properties["libraryPath"];
-                if (libraryPath.ToString().Length <= 0)
-                {
-                    MessageBox.Show("Error getting library path");
-                    return;
-                }
-
-                if (Directory.Exists(libraryPath.ToString() + renameWindow.GetTitle()))
+                string libraryPath = App.Current.Properties["libraryPath"].ToString();
+                var libraryName = "playlists/" + libraryListView.SelectedValue.ToString() + ".xml";
+                if (File.Exists(libraryPath + "playlists/" + renameWindow.GetTitle() + ".xml"))
                 {
                     MessageBox.Show("That is already a playlist name");
                     return; // Can't rename to a playlist already in the list
                 }
-                if (libraryListView.SelectedItem.ToString() == "Song Collection")
-                {
-                    MessageBox.Show("Can't Rename main library");
-                    return; 
-                }
+
+                XDocument document = XDocument.Load(libraryPath + libraryName);
+
+                document.Root.Attribute("Name").Value = renameWindow.GetTitle();
+                document.Save(libraryPath + "playlists/" + renameWindow.GetTitle() + ".xml");
+
                 libraryList.RemoveAt(libraryListView.SelectedIndex);
-                System.IO.Directory.Move(libraryPath.ToString() + libraryListView.SelectedValue.ToString(), libraryPath.ToString() + renameWindow.GetTitle());
+                System.IO.File.Delete(libraryPath + libraryName);
 
                 libraryList.Add(renameWindow.GetTitle());
                 libraryListView.Items.Refresh(); // Refresh the list to update the UI
