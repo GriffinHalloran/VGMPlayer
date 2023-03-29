@@ -35,6 +35,8 @@ namespace VGMPlayer
         private bool isLooping;
         private bool renameSoundtrack;
         private bool viewingSongCollection;
+        private bool viewingPlaylists;
+        private bool viewingSoundtracks;
 
         private int currentPlayingIndex;
         private PlaylistPage playlistPage;
@@ -55,6 +57,8 @@ namespace VGMPlayer
             isLooping = false;
             renameSoundtrack = false;
             viewingSongCollection = false;
+            viewingPlaylists = false;
+            viewingSoundtracks = false;
 
             mediaPlayer = new MediaPlayer();
             playlistPage = new PlaylistPage();
@@ -219,27 +223,23 @@ namespace VGMPlayer
         // Check all songs in selected soundtrack.
         public void CheckSoundtrackStatus()
         {
+            addSongButton.IsEnabled = true;
             var libraryPath = App.Current.Properties["libraryPath"].ToString();
-            if (libraryPath.Length <= 0)
-            {
-                MessageBox.Show("Error getting library path");
-                return;
-            }
 
             CC.Content = null;
             currentlyViewingMusicList.Clear();
             musicListView.Items.Refresh();
-            string filePath = libraryPath + "soundtracks/" + SoundtrackPage().SoundtrackListView.SelectedValue.ToString();
-            FileInfo[] files = new DirectoryInfo(filePath) // Gets songs in date added order
-                        .GetFiles("*.mp3")
-                        .OrderBy(f => f.CreationTime)
-                        .ToArray();
+            string filePath = libraryPath + "soundtracks/" + SoundtrackPage().SoundtrackListView.SelectedValue.ToString() + "/soundtrack.xml";
+            XDocument document = XDocument.Load(filePath);
 
-            foreach (var directoryPath in files)
+            foreach (XElement xe in document.Descendants("Songs").Descendants("Path"))
             {
                 try
                 {
-                    string songInfo = directoryPath.Name.ToString();
+                    string songPath = xe.Value;
+
+                    FileInfo file = new FileInfo(libraryPath + "/Song Collection/" + songPath);
+                    string songInfo = file.Name.ToString();
                     int titleIndex = songInfo.IndexOf('-') - 1;
                     string title = songInfo.Substring(0, titleIndex);
                     int soundtrackIndex = songInfo.IndexOf('-', titleIndex + 2);
@@ -247,16 +247,11 @@ namespace VGMPlayer
                     string duration = songInfo.Substring(songInfo.LastIndexOf('-') + 2, 8).Replace('.', ':');
 
                     currentlyViewingMusicList.Add(new MusicList { Filename = $"{title} - {soundtrack} - {duration.Replace(':', '.')}.mp3", Title = title, Soundtrack = soundtrack, Duration = TimeSpan.Parse(duration) });
-                }
 
-                catch (Exception) // Happens if file name doesn't include duration of song.
+                }
+                catch
                 {
-                    Mp3FileReader reader = new Mp3FileReader($"{filePath}/{directoryPath}");
-                    string title = directoryPath.Name.ToString().Remove(directoryPath.Name.ToString().Length - 4);
-                    TimeSpan duration = TimeSpan.Parse(reader.TotalTime.ToString(@"hh\:mm\:ss"));
-                    currentlyViewingMusicList.Add(new MusicList { Filename = $"{title} - {duration.ToString().Replace(':', '.')}.mp3", Title = title, Duration = duration });
-                    reader.Dispose();
-                    File.Move($"{filePath}/{directoryPath}", $"{filePath}/{title} - {duration.ToString().Replace(':', '.')}.mp3");
+                    MessageBox.Show("Error Checking Song Status");
                 }
                 addPlaylistButton.IsEnabled = false;
                 musicListView.Items.Refresh();
@@ -428,24 +423,32 @@ namespace VGMPlayer
             CC.Content = PlaylistPage();
             addSongButton.IsEnabled = false;
             addPlaylistButton.IsEnabled = true;
+            viewingSoundtracks = false;
+            viewingPlaylists = true;
             viewingSongCollection = false;
         }
 
         // For opening playlist view
         private void SoundtrackButton_Click(object sender, RoutedEventArgs e)
         {
+            SoundtrackPage().GetSoundtracks();
             CC.Content = SoundtrackPage();
             addSongButton.IsEnabled = false;
             addPlaylistButton.IsEnabled = false;
             viewingSongCollection = false;
+            viewingPlaylists = false;
+            viewingSoundtracks = true;
         }
 
         // For opening song library view
         private void AllSongButton_Click(object sender, RoutedEventArgs e)
         {
+            viewingSoundtracks = false;
             addPlaylistButton.IsEnabled = false;
             addSongButton.IsEnabled = true;
             viewingSongCollection = true;
+            viewingPlaylists = false;
+            viewingSoundtracks = false;
             ViewSongCollection();
         }
 
@@ -460,7 +463,7 @@ namespace VGMPlayer
         }
 
         public SoundtrackPage SoundtrackPage()
-        {
+        { 
             return this.soundtrackPage;
         }
 
@@ -500,6 +503,7 @@ namespace VGMPlayer
         private void CloseApp(object sender, MouseButtonEventArgs e)
         {
             playlistPage.renameWindow.Close();
+            soundtrackPage.renameWindow.Close();
             renameWindow.Close();
             addSongWindow.Close();
             Close();
@@ -519,7 +523,7 @@ namespace VGMPlayer
         }
         private void SongAdded()
         {
-            if (!viewingSongCollection)
+            if (viewingPlaylists)
             {
                 var libraryPath = App.Current.Properties["libraryPath"].ToString();
 
@@ -533,7 +537,7 @@ namespace VGMPlayer
                 document.Save(filePath);
                 CheckPlaylistStatus();
             }
-            else
+            else if (viewingSoundtracks)
             {
                 ViewSongCollection();
             }
@@ -595,6 +599,20 @@ namespace VGMPlayer
                 playlistSongs.ToList().ForEach(x => x.Remove());
                 document.Save(xml);
             }
+
+            files = Directory.GetFiles(libraryPath + "soundtracks", "*.xml", SearchOption.AllDirectories);
+
+            foreach (var xml in files)
+            {
+                XDocument document = XDocument.Load(xml);
+
+                var soundtrackSongs = from node in document.Descendants("Songs").Descendants("Path")
+                                    where node != null && node.Value == songName
+                                    select node;
+
+                soundtrackSongs.ToList().ForEach(x => x.Remove());
+                document.Save(xml);
+            }
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -647,10 +665,26 @@ namespace VGMPlayer
                     document.Save(xml);
                 }
 
-                if (!viewingSongCollection)
-                    CheckPlaylistStatus();
-                else
+                files = Directory.GetFiles(libraryPath + "soundtracks", "*.xml", SearchOption.AllDirectories);
+
+                foreach (var xml in files)
+                {
+                    XDocument document = XDocument.Load(xml);
+
+                    var soundtrackSongs = from node in document.Descendants("Songs").Descendants("Path")
+                                        where node != null && node.Value == curSong
+                                        select node;
+
+                    soundtrackSongs.ToList().ForEach(x => x.Value = $"{renameWindow.GetTitle()} - {soundtrack} - {duration.Replace(':', '.')}.mp3");
+                    document.Save(xml);
+                }
+
+                if (viewingSongCollection)
                     ViewSongCollection();
+                else if (viewingPlaylists)
+                    CheckPlaylistStatus();
+                else if (viewingSoundtracks)
+                    CheckSoundtrackStatus();
             }
         }
         private void SetSoundtrackMenuItem_Click(object sender, RoutedEventArgs e)
@@ -690,12 +724,26 @@ namespace VGMPlayer
                     playlistSongs.ToList().ForEach(x => x.Value = $"{title} - {renameWindow.GetTitle()} - {duration.Replace(':', '.')}.mp3");
                     document.Save(xml);
                 }
+                files = Directory.GetFiles(libraryPath + "soundtracks", "*.xml", SearchOption.AllDirectories);
 
-                if (!viewingSongCollection)
-                    CheckPlaylistStatus();
-                else
+                foreach (var xml in files)
+                {
+                    XDocument document = XDocument.Load(xml);
+
+                    var soundtrackSongs = from node in document.Descendants("Songs").Descendants("Path")
+                                        where node != null && node.Value == curSong
+                                        select node;
+
+                    soundtrackSongs.ToList().ForEach(x => x.Remove());
+                    document.Save(xml);
+                }
+
+                if (viewingSongCollection)
                     ViewSongCollection();
-
+                else if (viewingPlaylists)
+                    CheckPlaylistStatus();
+                else if (viewingSoundtracks)
+                    CheckSoundtrackStatus();
             }
         }
     }
