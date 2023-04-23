@@ -343,9 +343,8 @@ namespace VGMPlayer
             {
                 if (currentPlayingLabel.Content.ToString() != currentlyViewingMusicList[musicListView.SelectedIndex].Title)
                 {
-
                     currentlyPlayingMusicList.Clear();
-                    currentlyPlayingMusicList = new List<MusicList>(currentlyViewingMusicList);
+                    currentlyPlayingMusicList = new List<MusicList>(musicListView.Items.Cast<MusicList>().ToList());
                     currentPlayingIndex = musicListView.SelectedIndex;
                     currentPlayingLabel.Content = currentlyPlayingMusicList[currentPlayingIndex].Title;
                     var mediaFile = new Uri(libraryPath + "Song Collection/" + currentlyPlayingMusicList[currentPlayingIndex].Filename);
