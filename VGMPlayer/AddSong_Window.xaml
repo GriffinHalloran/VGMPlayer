@@ -7,49 +7,61 @@
         mc:Ignorable="d"
         Background="#272B2F"
         Title="Add song"
-        Height="700" Width="500"
+        Height="834" Width="701"
         ResizeMode="NoResize"
+        WindowStyle="None"
+        BorderBrush="Black"
+        BorderThickness="5"
         x:Name="window">
     <Grid>
         <StackPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10">
+                <Label Content="Import From:" Foreground="LightGray" FontSize="28" Margin="3,0" FontWeight="Bold" FontFamily="ui-monospace"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Height="75" Width="424">
+                <Button  x:Name="youtubeButton" BorderBrush="Black" BorderThickness="5" Content="Youtube" FontSize="24" FontWeight="Bold" Width="185" Height="64" Background="#4C4E52" Click="YoutubeButton_Click"/>
+                <Button  x:Name="localButton" BorderBrush="Black" BorderThickness="5" Content="Computer" FontSize="24" FontWeight="Bold" Width="185" Height="64" Margin="30, 0, 0, 0" Background="#4C4E52" Click="LocalButton_Click"/>
+            </StackPanel>
+            <Rectangle Height="5" Fill="Black" Stroke="Black" Margin="0, 20"/>
+
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10">
-                <Label Content="Youtube video ID / URL:" Foreground="LightGray" FontSize="28" Margin="3,0" FontWeight="Bold" FontFamily="ui-monospace"/>
+                <Label x:Name="importText" Content="Youtube video ID / URL:" Foreground="LightGray" FontSize="28" Margin="3,0" FontWeight="Bold" FontFamily="ui-monospace" Visibility="Hidden"/>
             </StackPanel>
 
-            <Border Background="LightGray" CornerRadius="10" Height="35" Width="350">
-                <TextBox x:Name="songURL" Width="350" Height="20" Margin="2" BorderThickness="0" VerticalContentAlignment="Center" FontSize="14" Background="LightGray" TextChanged="songLabel_TextChanged"/>
-            </Border>
-            
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="15">
-                <Label Content="Song Title:" Foreground="LightGray" FontSize="28" Margin="3,0" FontWeight="Bold" FontFamily="ui-monospace"/>
-            </StackPanel>
-            
-            <Border Background="LightGray" CornerRadius="10" Height="35" Width="350">
-                <TextBox x:Name="songLabel" Width="350" Height="20" Margin="2" BorderThickness="0" VerticalContentAlignment="Center" FontSize="14" Background="LightGray" TextChanged="songLabel_TextChanged"/>
+            <Border x:Name="songUrlBorder" Background="#272B2F" CornerRadius="10" Height="35" Width="350">
+                <TextBox x:Name="songURL" Width="350" Height="20" Margin="2" BorderThickness="0" VerticalContentAlignment="Center" FontSize="14" Background="LightGray" Visibility="Hidden" PreviewMouseLeftButtonDown="songUrl_Click"/>
             </Border>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="15">
-                <Label Content="Album / Soundtrack:" Foreground="LightGray" FontSize="28" Margin="3,0" FontWeight="Bold" FontFamily="ui-monospace"/>
+                <Label x:Name="songName" Content="Song Title:" Foreground="LightGray" FontSize="28" Margin="3,0" FontWeight="Bold" FontFamily="ui-monospace" Visibility="Hidden"/>
             </StackPanel>
 
-            <Border Background="LightGray" CornerRadius="10" Height="35" Width="350">
-                <TextBox x:Name="soundtrack" Width="350" Height="20" Margin="2" BorderThickness="0" VerticalContentAlignment="Center" FontSize="14" Background="LightGray"/>
+            <Border x:Name="songLabelBorder" Background="#272B2F" CornerRadius="10" Height="35" Width="350">
+                <TextBox x:Name="songLabel" Width="350" Height="20" Margin="2" BorderThickness="0" VerticalContentAlignment="Center" FontSize="14" Background="LightGray" Visibility="Hidden"/>
             </Border>
 
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="5, 0, 0, 0" Height="75" Width="326">
-                <Button Style="{StaticResource menuButton}" x:Name="closeButton" Content="Cancel" Width="119" Height="40" Click="CloseButton_Click" Background="#03bf69"/>
-                <Button Style="{StaticResource menuButton}" x:Name="okButton" Content="OK" Width="105" Height="40" Margin="30, 0, 0, 0" Click="OkButton_Click" Background="#03bf69"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="15">
+                <Label x:Name="albumTitle" Content="Album / Soundtrack:" Foreground="LightGray" FontSize="28" Margin="3,0" FontWeight="Bold" FontFamily="ui-monospace" Visibility="Hidden"/>
+            </StackPanel>
+
+            <Border x:Name="soundtrackBorder" Background="#272B2F" CornerRadius="10" Height="35" Width="350">
+                <TextBox x:Name="soundtrack" Width="350" Height="20" Margin="2" BorderThickness="0" VerticalContentAlignment="Center" FontSize="14" Background="LightGray" Visibility="Hidden"/>
+            </Border>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="5, 0, 0, 20" Height="75" Width="326">
+                <Button Style="{StaticResource menuButton}" x:Name="closeButton" Content="Cancel" Width="119" Height="40" Click="CloseButton_Click" Background="#03bf69" Visibility="Hidden"/>
+                <Button Style="{StaticResource menuButton}" x:Name="okButton" Content="OK" Width="105" Height="40" Margin="30, 0, 0, 0" Click="OkButton_Click" Background="#03bf69" Visibility="Hidden"/>
             </StackPanel>
             <Rectangle x:Name="rectangle1" Height="5" Fill="Black" Stroke="Black"/>
-            <Border Height="298" Width="500" Background="#4C4E52">
+            <Border Height="365" Width="749" Background="#4C4E52">
                 <Grid>
-                    <Label x:Name="downloadingLabel" Content="DOWNLOADING..." Visibility="Hidden" VerticalContentAlignment="Center" Foreground="White" FontSize="28" Width="300" Height="44" Margin="76,10,24,246"/>
-                    <Rectangle x:Name="rectangle2" Height="3" Fill="Black" Stroke="Black" Margin="-8,59,-117,238" Visibility="Hidden"/>
-                    <Label x:Name="titleLabel" Visibility="Hidden" Content="Title:" VerticalContentAlignment="Center" Foreground="Black" FontSize="28" FontWeight="Bold" Width="300" Height="44" Margin="0,60,160,180"/>
-                    <TextBox x:Name="songTitle" Margin="103,62,0,187" BorderThickness="0" VerticalContentAlignment="Center" FontSize="18" Background="#4C4E52" TextChanged="songLabel_TextChanged"/>
+                    <Label x:Name="downloadingLabel" Content="DOWNLOADING..." Visibility="Hidden" VerticalContentAlignment="Center" Foreground="White" FontSize="28" Width="300" Height="44" Margin="224,13,225,308"/>
+                    <Rectangle x:Name="rectangle2" Height="3" Fill="Black" Stroke="Black"  Visibility="Hidden" Margin="0,80,0,282"/>
+                    <Label x:Name="titleLabel" Visibility="Hidden" Content="Title:" VerticalContentAlignment="Center" Foreground="Black" FontSize="28" FontWeight="Bold" Width="300" Height="44" Margin="28,92,421,229"/>
+                    <TextBox x:Name="songTitle" Margin="112,92,112,217" BorderThickness="0" VerticalContentAlignment="Center" FontSize="18" Background="#4C4E52" />
                     <Rectangle x:Name="rectangle3" Height="3" Fill="Black" Stroke="Black" Margin="0,116,0,181" Visibility="Hidden"/>
-                    <Label x:Name="songDurationLabel" Content="Duration:"  Visibility="Hidden" VerticalContentAlignment="Center" Foreground="Black" FontSize="28" FontWeight="Bold" Width="300" Height="44" Margin="0,128,160,128"/>
-                    <TextBox x:Name="songDuration" Margin="160,123,0,126" BorderThickness="0" VerticalContentAlignment="Center" FontSize="18" Background="#4C4E52" TextChanged="songLabel_TextChanged"/>
+                    <Label x:Name="songDurationLabel" Content="Duration:"  Visibility="Hidden" VerticalContentAlignment="Center" Foreground="Black" FontSize="28" FontWeight="Bold" Margin="10,158,427,157"/>
+                    <TextBox x:Name="songDuration" Margin="131,158,212,146" BorderThickness="0" VerticalContentAlignment="Center" FontSize="18" Background="#4C4E52" TextChanged="songLabel_TextChanged"/>
                 </Grid>
             </Border>
         </StackPanel>

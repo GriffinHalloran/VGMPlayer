@@ -9,6 +9,8 @@
         Background="#272B2F"
         Height="700" Width="1050"
         MinHeight="285" MinWidth="400"
+        BorderBrush="Black"
+        BorderThickness="5"
         Closing="Window_Closing" ResizeMode="CanResizeWithGrip" AllowsTransparency="True" WindowStyle="None">
     <Border Background="#272B2F" CornerRadius ="40" MouseDown="Border_MouseDown">
         <Grid>
@@ -49,6 +51,7 @@
                         <MenuItem Header="Delete" Click="DeleteSongMenuItem_Click"/>
                         <MenuItem Header="Rename Song" Click="RenameSongMenuItem_Click"/>
                         <MenuItem Header="Rename Soundtrack" Click = "SetSoundtrackMenuItem_Click"/>
+                        <MenuItem Header="Add To Playlist" Click = "AddToPlaylistMenuItem_Click"/>
                     </ContextMenu>
                 </ListView.ContextMenu>
 
