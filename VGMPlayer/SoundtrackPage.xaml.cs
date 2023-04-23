@@ -203,5 +203,10 @@ namespace VGMPlayer
 
             GetSoundtracks();
         }
+
+        public List<Soundtrack> SoundtrackList()
+        {
+            return soundtrackList;
+        }
     }
 }

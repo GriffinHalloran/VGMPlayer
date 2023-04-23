@@ -178,9 +178,10 @@ namespace VGMPlayer
                     reader.Dispose();
                     File.Move($"{filePath}/{directoryPath}", $"{filePath}/{title} - {duration.ToString().Replace(':', '.')}.mp3");
                 }
-                addPlaylistButton.IsEnabled = false;
-                musicListView.Items.Refresh();
             }
+            addPlaylistButton.IsEnabled = false;
+            musicListView.ItemsSource = currentlyViewingMusicList;
+            musicListView.Items.Refresh();
         }
 
 
@@ -221,9 +222,10 @@ namespace VGMPlayer
                     {
                         MessageBox.Show("Error Checking Song Status");
                     }
-                    addPlaylistButton.IsEnabled = false;
-                    musicListView.Items.Refresh();
                 }
+                addPlaylistButton.IsEnabled = false;
+                musicListView.ItemsSource = currentlyViewingMusicList;
+                musicListView.Items.Refresh();
             }
         }
 
@@ -260,9 +262,10 @@ namespace VGMPlayer
                 {
                     MessageBox.Show("Error Checking Song Status");
                 }
-                addPlaylistButton.IsEnabled = false;
-                musicListView.Items.Refresh();
             }
+            addPlaylistButton.IsEnabled = false;
+            musicListView.ItemsSource = currentlyViewingMusicList;
+            musicListView.Items.Refresh();
         }
 
         private void SkipForward()
@@ -382,6 +385,15 @@ namespace VGMPlayer
             }
         }
 
+        private void SearchButton_Click(object sender, RoutedEventArgs e)
+        {
+            SearchBar.Text= string.Empty;
+            if (SearchBar.Visibility == System.Windows.Visibility.Visible)
+                SearchBar.Visibility= System.Windows.Visibility.Hidden;
+            else
+                SearchBar.Visibility = System.Windows.Visibility.Visible;
+        }
+
         private void PlayMedia()
         {
             if (!isPlayingAudio)
@@ -406,6 +418,7 @@ namespace VGMPlayer
         private void AddSongButton_Click(object sender, RoutedEventArgs e)
         {
             addSongWindow.ShowDialog();
+            SearchBar.Visibility = System.Windows.Visibility.Hidden;
         }
 
         // For renaming a music library
@@ -414,11 +427,33 @@ namespace VGMPlayer
             var newNameWin = new CreatePlaylist_Window();
             newNameWin.Owner = this;
             newNameWin.ShowDialog();
+            SearchBar.Visibility = System.Windows.Visibility.Hidden;
+        }
+
+        // For searching music library
+        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            string searchText = SearchBar.Text.ToLowerInvariant();
+            if (viewingSoundtracks)
+            {
+                var filteredSoundtrackList = SoundtrackPage().SoundtrackList().Where(m =>
+                    m.Name.ToLowerInvariant().Contains(searchText));
+                soundtrackPage.SoundtrackListView.ItemsSource = filteredSoundtrackList;
+            }
+
+                // Filter the music items based on the search text
+                var filteredList = currentlyViewingMusicList.Where(m =>
+                    m.Title.ToLowerInvariant().Contains(searchText) ||
+                    m.Soundtrack.ToLowerInvariant().Contains(searchText)).ToList();
+
+                musicListView.ItemsSource = filteredList;
+                musicListView.Items.Refresh();
         }
 
         private void HomeButton_Click(object sender, RoutedEventArgs e)
         {
             CC.Content = HomePage();
+            SearchBar.Visibility = System.Windows.Visibility.Hidden;
             addSongButton.IsEnabled = false;
             addPlaylistButton.IsEnabled = false;
             viewingSongCollection = false;
@@ -431,6 +466,7 @@ namespace VGMPlayer
         private void PlaylistButton_Click(object sender, RoutedEventArgs e)
         {
             CC.Content = PlaylistPage();
+            SearchBar.Visibility = System.Windows.Visibility.Hidden;
             addSongButton.IsEnabled = false;
             addPlaylistButton.IsEnabled = true;
             viewingSoundtracks = false;
@@ -444,6 +480,7 @@ namespace VGMPlayer
         {
             SoundtrackPage().GetSoundtracks();
             CC.Content = SoundtrackPage();
+            SearchBar.Visibility = System.Windows.Visibility.Hidden;
             addSongButton.IsEnabled = false;
             addPlaylistButton.IsEnabled = false;
             viewingSongCollection = false;
@@ -455,6 +492,7 @@ namespace VGMPlayer
         // For opening song library view
         private void AllSongButton_Click(object sender, RoutedEventArgs e)
         {
+            SearchBar.Visibility = System.Windows.Visibility.Hidden;
             viewingSoundtracks = false;
             addPlaylistButton.IsEnabled = false;
             addSongButton.IsEnabled = true;
