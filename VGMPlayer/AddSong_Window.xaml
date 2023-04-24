@@ -29,7 +29,7 @@
             </StackPanel>
 
             <Border x:Name="songUrlBorder" Background="#272B2F" CornerRadius="10" Height="35" Width="350">
-                <TextBox x:Name="songURL" Width="350" Height="20" Margin="2" BorderThickness="0" VerticalContentAlignment="Center" FontSize="14" Background="LightGray" Visibility="Hidden" PreviewMouseLeftButtonDown="songUrl_Click"/>
+                <TextBox x:Name="songURL" Width="350" Height="20" Margin="2" BorderThickness="0" TextAlignment="Center" VerticalContentAlignment="Center" FontSize="14" Background="LightGray" Visibility="Hidden" PreviewMouseLeftButtonDown="songUrl_Click"/>
             </Border>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="15">
