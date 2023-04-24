@@ -44,11 +44,6 @@ namespace VGMPlayer
             renameWindow.RenameSelected += (s, e) => RenamePlaylist();
 
             var libraryPath = App.Current.Properties["libraryPath"];
-            if (libraryPath.ToString().Length <= 0)
-            {
-                MessageBox.Show("Error getting library path");
-                return;
-            }
 
             if (!Directory.Exists(libraryPath.ToString())) // Creates a root directory for all music libraries
                 Directory.CreateDirectory(libraryPath.ToString());

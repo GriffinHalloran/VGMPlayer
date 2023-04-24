@@ -15,12 +15,6 @@ namespace VGMPlayer
         public CreatePlaylist_Window() // Used for creating libraries
         {
             InitializeComponent();
-            var libraryPath = App.Current.Properties["libraryPath"];
-            if (libraryPath.ToString().Length <= 0)
-            {
-                MessageBox.Show("Error getting library path");
-                return;
-            }
         }
 
         private void CreateNewLibrary()

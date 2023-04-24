@@ -21,9 +21,7 @@ using System.Security.Policy;
 
 namespace VGMPlayer
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
+
     public partial class MainWindow : Window
     {
         public static List<MusicList> currentlyPlayingMusicList = new List<MusicList>();
@@ -33,7 +31,7 @@ namespace VGMPlayer
 
         private bool isPlayingAudio;
         private bool isLooping;
-        private bool renameSoundtrack;
+        private bool renamingSoundtrack;
         private bool viewingSongCollection;
         private bool viewingPlaylists;
         private bool viewingSoundtracks;
@@ -48,6 +46,7 @@ namespace VGMPlayer
 
         public MainWindow()
         { 
+            //Used to set the library path for the application. This should be changed to your desired path before running
             App.Current.Properties["libraryPath"] = "C:/Users/griff/Desktop/VGM Library/library/";
             DispatcherTimer dt = new DispatcherTimer();
             dt.Interval = TimeSpan.FromSeconds(1);
@@ -56,7 +55,7 @@ namespace VGMPlayer
 
             isPlayingAudio = false;
             isLooping = false;
-            renameSoundtrack = false;
+            renamingSoundtrack = false;
             viewingSongCollection = false;
             viewingPlaylists = false;
             viewingSoundtracks = false;
@@ -74,6 +73,14 @@ namespace VGMPlayer
             soundtrackPage.SoundtrackDoubleClicked += (s, e) => CheckSoundtrackStatus();
             renameWindow.RenameSelected += (s, e) => Rename();
             addSongWindow.SongAdded += (s, e) => SongAdded();
+
+            // Verifies that the library path is valid
+            var libraryPath = App.Current.Properties["libraryPath"].ToString();
+            if (libraryPath.Length <= 0)
+            {
+                MessageBox.Show("Error getting library path");
+                return;
+            }
 
             InitializeComponent();
 
@@ -122,33 +129,14 @@ namespace VGMPlayer
             }
         }
 
-        //Loops the song
-        private void Loop()
-        {
-            if (isLooping) // Enables looping
-            {
-                loopButton.Foreground = Brushes.Gray;
-                isLooping = false;
-            }
-            else // Disables looping
-            {
-                loopButton.Foreground = Brushes.AliceBlue;
-                isLooping = true;
-            }
-        }
-
+        // Collects all songs in the library
         private void ViewSongCollection()
         {
             var libraryPath = App.Current.Properties["libraryPath"].ToString();
-            if (libraryPath.Length <= 0)
-            {
-                MessageBox.Show("Error getting library path");
-                return;
-            }
-
             CC.Content = null;
             currentlyViewingMusicList.Clear();
             musicListView.Items.Refresh();
+
             string filePath = libraryPath + "Song Collection/";
             FileInfo[] files = new DirectoryInfo(filePath) // Gets songs in date added order
                         .GetFiles("*.mp3")
@@ -159,6 +147,7 @@ namespace VGMPlayer
             {
                 try
                 {
+                    // Parses songs in library folder
                     string songInfo = directoryPath.Name.ToString();
                     int titleIndex = songInfo.IndexOf('-') - 1;
                     string title = songInfo.Substring(0, titleIndex);
@@ -185,7 +174,7 @@ namespace VGMPlayer
         }
 
 
-        // Check all songs in selected library.
+        // Check all songs in selected playlist
         public void CheckPlaylistStatus()
         {
             if (addingToPlaylists)
@@ -220,7 +209,7 @@ namespace VGMPlayer
                     }
                     catch
                     {
-                        MessageBox.Show("Error Checking Song Status");
+                        MessageBox.Show("Error Getting Songs From Playlist");
                     }
                 }
                 addPlaylistButton.IsEnabled = false;
@@ -260,7 +249,7 @@ namespace VGMPlayer
                 }
                 catch
                 {
-                    MessageBox.Show("Error Checking Song Status");
+                    MessageBox.Show("Error Getting Songs From Soundtrack");
                 }
             }
             addPlaylistButton.IsEnabled = false;
@@ -271,11 +260,6 @@ namespace VGMPlayer
         private void SkipForward()
         {
             var libraryPath = App.Current.Properties["libraryPath"].ToString();
-            if (libraryPath.Length <= 0)
-            {
-                MessageBox.Show("Error getting library path");
-                return;
-            }
 
             if (currentPlayingIndex == currentlyPlayingMusicList.Count - 1) // If last song in list, then pause.
             {
@@ -302,11 +286,6 @@ namespace VGMPlayer
         private void SkipBackward()
         {
             var libraryPath = App.Current.Properties["libraryPath"].ToString();
-            if (libraryPath.Length <= 0)
-            {
-                MessageBox.Show("Error getting library path");
-                return;
-            }
 
             if (currentPlayingIndex == 0) // If the first item, then doesn't accept to go negative.
             {
@@ -329,15 +308,17 @@ namespace VGMPlayer
 
             musicListView.SelectedItem = null;
         }
+        private void PlayMedia()
+        {
+            if (!isPlayingAudio)
+                PlayAudio();
+            else
+                PauseAudio();
+        }
 
         private void PlayAudio()
         {
             var libraryPath = App.Current.Properties["libraryPath"].ToString();
-            if (libraryPath.Length <= 0)
-            {
-                MessageBox.Show("Error getting library path");
-                return;
-            }
 
             if (musicListView.Items.Count != 0 && musicListView.SelectedItem != null)
             {
@@ -357,6 +338,50 @@ namespace VGMPlayer
             PlayIcon.Kind = MahApps.Metro.IconPacks.PackIconMaterialKind.Pause;
             isPlayingAudio = true;
         }
+
+        private void PauseAudio()
+        {
+            mediaPlayer.Pause();
+            PlayIcon.Kind = MahApps.Metro.IconPacks.PackIconMaterialKind.Play;
+            isPlayingAudio = false;
+        }
+
+        //Loops the song
+        private void Loop()
+        {
+            if (isLooping) // Enables looping
+            {
+                loopButton.Foreground = Brushes.Gray;
+                isLooping = false;
+            }
+            else // Disables looping
+            {
+                loopButton.Foreground = Brushes.AliceBlue;
+                isLooping = true;
+            }
+        }
+
+        // Access to all the application pages
+        public PlaylistPage PlaylistPage()
+        {
+            return this.playlistPage;
+        }
+
+        public HomePage HomePage()
+        {
+            return this.homePage;
+        }
+
+        public SoundtrackPage SoundtrackPage()
+        {
+            return this.soundtrackPage;
+        }
+
+        public void EnableSongButton()
+        {
+            addSongButton.IsEnabled = true;
+        }
+
         private void AudioPositionSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (audioPositionSlider.IsFocused)
@@ -364,12 +389,15 @@ namespace VGMPlayer
                 mediaPlayer.Position = TimeSpan.FromSeconds(audioPositionSlider.Value);
             }
         }
-        private void PauseAudio()
+
+        private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            mediaPlayer.Pause();
-            PlayIcon.Kind = MahApps.Metro.IconPacks.PackIconMaterialKind.Play;
-            isPlayingAudio = false;
+            Settings.Default["volume"] = volumeSlider.Value.ToString();
+            Settings.Default.Save();
+
+            mediaPlayer.Volume = volumeSlider.Value;
         }
+
         private void VolumeButton_Click(object sender, RoutedEventArgs e)
         {
             if (volumeSlider.IsVisible)
@@ -393,34 +421,14 @@ namespace VGMPlayer
                 SearchBar.Visibility = System.Windows.Visibility.Visible;
         }
 
-        private void PlayMedia()
-        {
-            if (!isPlayingAudio)
-            {
-                PlayAudio();
-            }
-            else
-            {
-                PauseAudio();
-            }
-        }
-
-        private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            Settings.Default["volume"] = volumeSlider.Value.ToString();
-            Settings.Default.Save();
-
-            mediaPlayer.Volume = volumeSlider.Value;
-        }
-
-        // For renaming a music library
+        // For adding a song
         private void AddSongButton_Click(object sender, RoutedEventArgs e)
         {
             addSongWindow.ShowDialog();
             SearchBar.Visibility = System.Windows.Visibility.Hidden;
         }
 
-        // For renaming a music library
+        // For adding a playlist
         private void AddPlaylistButton_Click(object sender, RoutedEventArgs e)
         {
             var newNameWin = new CreatePlaylist_Window();
@@ -429,8 +437,8 @@ namespace VGMPlayer
             SearchBar.Visibility = System.Windows.Visibility.Hidden;
         }
 
-        // For searching music library
-        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        // Searches music library as text is entered in the search bar
+        private void SearchBar_TextChanged(object sender, TextChangedEventArgs e)
         {
             string searchText = SearchBar.Text.ToLowerInvariant();
             if (viewingSoundtracks)
@@ -440,13 +448,13 @@ namespace VGMPlayer
                 soundtrackPage.SoundtrackListView.ItemsSource = filteredSoundtrackList;
             }
 
-                // Filter the music items based on the search text
-                var filteredList = currentlyViewingMusicList.Where(m =>
-                    m.Title.ToLowerInvariant().Contains(searchText) ||
-                    m.Soundtrack.ToLowerInvariant().Contains(searchText)).ToList();
+            // Filter the music items based on the search text
+            var filteredList = currentlyViewingMusicList.Where(m =>
+                m.Title.ToLowerInvariant().Contains(searchText) ||
+                m.Soundtrack.ToLowerInvariant().Contains(searchText)).ToList();
 
-                musicListView.ItemsSource = filteredList;
-                musicListView.Items.Refresh();
+            musicListView.ItemsSource = filteredList;
+            musicListView.Items.Refresh();
         }
 
         private void HomeButton_Click(object sender, RoutedEventArgs e)
@@ -500,26 +508,6 @@ namespace VGMPlayer
             viewingSoundtracks = false;
             addingToPlaylists = false;
             ViewSongCollection();
-        }
-
-        public PlaylistPage PlaylistPage()
-        {
-            return this.playlistPage;
-        }
-
-        public HomePage HomePage()
-        {
-            return this.homePage;
-        }
-
-        public SoundtrackPage SoundtrackPage()
-        { 
-            return this.soundtrackPage;
-        }
-
-        public void EnableSongButton()
-        {
-            addSongButton.IsEnabled = true;
         }
 
         private void PlayMenuItem_Click(object sender, RoutedEventArgs e)
@@ -583,7 +571,7 @@ namespace VGMPlayer
                 string filePath = libraryPath + "playlists/" + PlaylistPage().libraryListView.SelectedValue.ToString() + ".xml";
                 XDocument document = XDocument.Load(filePath);
 
-                document.Descendants("Songs").First().Add(new XElement("Path", addSongWindow.songPath()));
+                document.Descendants("Songs").First().Add(new XElement("Path", addSongWindow.SongPath()));
                 document.Save(filePath);
                 CheckPlaylistStatus();
             }
@@ -616,11 +604,6 @@ namespace VGMPlayer
         private void DeleteSongItem()
         {
             var libraryPath = App.Current.Properties["libraryPath"].ToString();
-            if (libraryPath.Length <= 0)
-            {
-                MessageBox.Show("Error getting library path");
-                return;
-            } 
 
             if (musicListView.SelectedIndex == -1) return;
 
@@ -628,9 +611,7 @@ namespace VGMPlayer
             string songPath = libraryPath + "Song Collection/" + songName;
 
             if (currentlyPlayingMusicList.SequenceEqual(currentlyViewingMusicList) && currentPlayingLabel.Content.ToString().Length != 0)
-            {
                 currentlyPlayingMusicList.RemoveAt(musicListView.SelectedIndex);
-            }
 
             currentlyViewingMusicList.RemoveAt(musicListView.SelectedIndex);
             musicListView.Items.Refresh();
@@ -642,6 +623,7 @@ namespace VGMPlayer
             {
                 XDocument document = XDocument.Load(xml);
 
+                // Remove the song from all playlists
                 var playlistSongs = from node in document.Descendants("Songs").Descendants("Path")
                                     where node != null && node.Value == songName
                                     select node;
@@ -656,6 +638,7 @@ namespace VGMPlayer
             {
                 XDocument document = XDocument.Load(xml);
 
+                // Remove the song from all soundtracks
                 var soundtrackSongs = from node in document.Descendants("Songs").Descendants("Path")
                                     where node != null && node.Value == songName
                                     select node;
@@ -667,11 +650,6 @@ namespace VGMPlayer
         private void AddToPlaylist()
         {
             var libraryPath = App.Current.Properties["libraryPath"].ToString();
-            if (libraryPath.Length <= 0)
-            {
-                MessageBox.Show("Error getting library path");
-                return;
-            }
 
             if (musicListView.SelectedIndex == -1) return;
 
@@ -697,18 +675,15 @@ namespace VGMPlayer
 
         }
 
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-        }
         private void RenameSongMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            renameSoundtrack = false;
+            renamingSoundtrack = false;
             renameWindow.ShowDialog();
         }
 
         private void Rename ()
         {
-            if (renameSoundtrack)
+            if (renamingSoundtrack)
                 RenameSoundtrack();
             else
                 RenameSong();
@@ -747,6 +722,7 @@ namespace VGMPlayer
                 {
                     XDocument document = XDocument.Load(xml);
 
+                    // Renames songs in playlists
                     var playlistSongs = from node in document.Descendants("Songs").Descendants("Path")
                                         where node != null && node.Value == curSong
                                         select node;
@@ -761,6 +737,7 @@ namespace VGMPlayer
                 {
                     XDocument document = XDocument.Load(xml);
 
+                    //Renames songs in soundtracks
                     var soundtrackSongs = from node in document.Descendants("Songs").Descendants("Path")
                                         where node != null && node.Value == curSong
                                         select node;
@@ -779,7 +756,7 @@ namespace VGMPlayer
         }
         private void SetSoundtrackMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            renameSoundtrack = true;
+            renamingSoundtrack = true;
             renameWindow.ShowDialog();
         }
 
@@ -792,11 +769,6 @@ namespace VGMPlayer
         private void RenameSoundtrack()
         {
             var libraryPath = App.Current.Properties["libraryPath"].ToString();
-            if (libraryPath.Length <= 0)
-            {
-                MessageBox.Show("Error getting library path");
-                return;
-            }
 
             if (musicListView.Items.Count != 0 && musicListView.SelectedItem != null && renameWindow.GetTitle().Length > 0)
             {
@@ -813,6 +785,7 @@ namespace VGMPlayer
                 {
                     XDocument document = XDocument.Load(xml);
 
+                    // Rename soundtrack in all playlists
                     var playlistSongs = from node in document.Descendants("Songs").Descendants("Path")
                                         where node != null && node.Value == curSong
                                         select node;
@@ -826,6 +799,7 @@ namespace VGMPlayer
                 {
                     XDocument document = XDocument.Load(xml);
 
+                    // Rename all songs in the soundtrack
                     var soundtrackSongs = from node in document.Descendants("Songs").Descendants("Path")
                                         where node != null && node.Value == curSong
                                         select node;

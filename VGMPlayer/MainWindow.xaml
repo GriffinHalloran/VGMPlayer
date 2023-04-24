@@ -9,7 +9,7 @@
         Background="#272B2F"
         Height="700" Width="1050"
         MinHeight="285" MinWidth="400"
-        Closing="Window_Closing" ResizeMode="CanResizeWithGrip" AllowsTransparency="True" WindowStyle="None">
+        ResizeMode="CanResizeWithGrip" AllowsTransparency="True" WindowStyle="None">
     <Border Background="#272B2F" CornerRadius ="40" MouseDown="Border_MouseDown">
         <Grid>
             <Grid.ColumnDefinitions>
@@ -105,7 +105,7 @@
                             <TextBlock Text="Search"/>
                         </Grid>
                     </Button>
-                    <TextBox x:Name="SearchBar" Width="180" Height="25" Margin="2" VerticalContentAlignment="Center" FontSize="14" Background="LightGray" Visibility="Hidden" TextChanged="SearchBox_TextChanged"/>
+                    <TextBox x:Name="SearchBar" Width="180" Height="25" Margin="2" VerticalContentAlignment="Center" FontSize="14" Background="LightGray" Visibility="Hidden" TextChanged="SearchBar_TextChanged"/>
 
 
                     <Button Style="{StaticResource menuButton}" Click="AddPlaylistButton_Click" IsEnabled="False" Name="addPlaylistButton" Margin="30 110 0 0">

@@ -61,7 +61,7 @@
                     <TextBox x:Name="songTitle" Margin="112,92,112,217" BorderThickness="0" VerticalContentAlignment="Center" FontSize="18" Background="#4C4E52" />
                     <Rectangle x:Name="rectangle3" Height="3" Fill="Black" Stroke="Black" Margin="0,116,0,181" Visibility="Hidden"/>
                     <Label x:Name="songDurationLabel" Content="Duration:"  Visibility="Hidden" VerticalContentAlignment="Center" Foreground="Black" FontSize="28" FontWeight="Bold" Margin="10,158,427,157"/>
-                    <TextBox x:Name="songDuration" Margin="131,158,212,146" BorderThickness="0" VerticalContentAlignment="Center" FontSize="18" Background="#4C4E52" TextChanged="songLabel_TextChanged"/>
+                    <TextBox x:Name="songDuration" Margin="155,158,188,146" BorderThickness="0" VerticalContentAlignment="Center" FontSize="18" Background="#4C4E52"/>
                 </Grid>
             </Border>
         </StackPanel>

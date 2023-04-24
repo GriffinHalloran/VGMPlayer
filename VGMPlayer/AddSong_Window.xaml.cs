@@ -18,9 +18,7 @@ using System.Globalization;
 
 namespace VGMPlayer
 {
-    /// <summary>
-    /// Interaction logic for AddSong_Window.xaml
-    /// </summary>
+
     public partial class AddSong_Window : Window
     {
         private YoutubeClient youtube;
@@ -47,12 +45,12 @@ namespace VGMPlayer
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
             if (uploadingFromComputer)
-                uploadFromComputer();
+                UploadFromComputer();
             else
-                uploadFromYoutube();
+                UploadFromYoutube();
         }
 
-        private void uploadFromComputer()
+        private void UploadFromComputer()
         {
             string songSoundtrack = soundtrack.Text;
             if (songSoundtrack.Length == 0) songSoundtrack = "Unknown";
@@ -78,23 +76,12 @@ namespace VGMPlayer
             MainWindow.currentlyPlayingMusicList = new List<MusicList>(MainWindow.currentlyViewingMusicList);
             song = $"{cleanTitle} - {cleanSoundtrack} - {cleanDuration}.mp3";
             SongAdded?.Invoke(this, EventArgs.Empty);
-            songLabel.Text = "";
-            soundtrack.Text = "";
-            downloadingLabel.Visibility = Visibility.Collapsed;
-            titleLabel.Visibility = Visibility.Collapsed;
-            songDurationLabel.Visibility = Visibility.Collapsed;
-            rectangle2.Visibility = Visibility.Collapsed;
-            rectangle3.Visibility = Visibility.Collapsed;
-            songDuration.Text = "";
-            songTitle.Text = "";
-            okButton.IsEnabled = true; // Disables buttons to notify user and to keep errors away.
-            closeButton.IsEnabled = true;
-            songLabel.IsEnabled = true;
+            ResetWindow();
 
             this.Hide(); // Lastly hide the window
         }
 
-        private async void uploadFromYoutube()
+        private async void UploadFromYoutube()
         { 
             string youtubeID = songURL.Text;
             string songSoundtrack = soundtrack.Text;
@@ -115,7 +102,7 @@ namespace VGMPlayer
                 if (songLabel.Text != string.Empty)
                     cleanTitle = CleanTitle(songLabel.Text); // Cleans illegal characters to bypass errors
                 else
-                    cleanTitle = video.Title;
+                    cleanTitle = CleanTitle(video.Title);
 
                 var cleanSoundtrack = CleanTitle(songSoundtrack);
                 var duration = video.Duration;
@@ -129,11 +116,6 @@ namespace VGMPlayer
                 songTitle.Text = cleanTitle;
 
                 string libraryPath = App.Current.Properties["libraryPath"].ToString();
-                if (libraryPath.Length <= 0)
-                {
-                    MessageBox.Show("Error getting library path");
-                    return;
-                }
 
                 if (System.IO.File.Exists(libraryPath + $"Song Collection/{cleanTitle} - {cleanSoundtrack} - {cleanDuration}.mp3"))
                 {
@@ -141,6 +123,7 @@ namespace VGMPlayer
                     return;
                 }
 
+                // Adds downloaded song to music list
                 MainWindow.currentlyViewingMusicList.Add(new MusicList { Filename = $"{cleanTitle} - {cleanSoundtrack} - {cleanDuration}.mp3", Title = cleanTitle, Soundtrack = cleanSoundtrack, Duration = (TimeSpan)duration });
                 var destinationPath = Path.Combine(libraryPath + $"Song Collection/{cleanTitle} - {cleanSoundtrack} - {cleanDuration}.mp3");
 
@@ -162,18 +145,8 @@ namespace VGMPlayer
                 MainWindow.currentlyPlayingMusicList = new List<MusicList>(MainWindow.currentlyViewingMusicList);
                 song = $"{cleanTitle} - {cleanSoundtrack} - {cleanDuration}.mp3";
                 SongAdded?.Invoke(this, EventArgs.Empty);
-                songLabel.Text = "";
-                soundtrack.Text = "";
-                downloadingLabel.Visibility = Visibility.Collapsed;
-                titleLabel.Visibility = Visibility.Collapsed;
-                songDurationLabel.Visibility = Visibility.Collapsed;
-                rectangle2.Visibility = Visibility.Collapsed;
-                rectangle3.Visibility = Visibility.Collapsed;
-                songDuration.Text = "";
-                songTitle.Text = "";
-                okButton.IsEnabled = true; // Disables buttons to notify user and to keep errors away.
-                closeButton.IsEnabled = true;
-                songLabel.IsEnabled = true;
+                ResetWindow();
+
             }
             catch (IOException)
             {
@@ -193,6 +166,28 @@ namespace VGMPlayer
             }
 
             this.Hide(); // Lastly hide the window
+        }
+
+        // Resets window to original settings
+        private void ResetWindow()
+        {
+            songLabel.Text = "";
+            soundtrack.Text = "";
+            downloadingLabel.Visibility = Visibility.Collapsed;
+            titleLabel.Visibility = Visibility.Collapsed;
+            songDurationLabel.Visibility = Visibility.Collapsed;
+            rectangle2.Visibility = Visibility.Collapsed;
+            rectangle3.Visibility = Visibility.Collapsed;
+            songDuration.Text = "";
+            songTitle.Text = "";
+            songURL.Text = "";
+            songURL.IsEnabled = true;
+            songTitle.IsEnabled = true;
+            okButton.IsEnabled = true;
+            closeButton.IsEnabled = true;
+            songLabel.IsEnabled = true;
+            soundtrack.IsEnabled = true;
+            setInvisible();
         }
 
         private void setVisible()
@@ -246,6 +241,7 @@ namespace VGMPlayer
         {
             uploadingFromComputer = false;
             importText.Content = "Youtube video ID / URL:";
+            songURL.Text = string.Empty;
             youtubeButton.Background = Brushes.White;
             SolidColorBrush brush = (SolidColorBrush)new BrushConverter().ConvertFrom("#4C4E52");
             localButton.Background = brush;
@@ -265,34 +261,25 @@ namespace VGMPlayer
         private void CheckLibraryStatus()
         {
             var libraryPath = App.Current.Properties["libraryPath"];
-            if (libraryPath.ToString().Length <= 0)
-            {
-                MessageBox.Show("Error getting library path");
-                return;
-            }
 
+            // Creates the root directory if it has not already been made
             if (!Directory.Exists(libraryPath.ToString()))
-            {
                 Directory.CreateDirectory(libraryPath.ToString());
-            }
         }
 
+        // Ensures duration works with music player by removing colons
         private string CleanDuration(TimeSpan duration)
         {
             return duration.ToString().Replace(':', '.');
         }
 
+        // Removes dashes from titles
         private string CleanTitle(string title)
         {
             return string.Join("_", title.Split(Path.GetInvalidFileNameChars())).Replace('-', '_');
         }
 
-        private void songLabel_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
-        {
-
-        }
-
-        public string songPath ()
+        public string SongPath ()
         {
             if (this.song != "N/A")
                  return this.song;

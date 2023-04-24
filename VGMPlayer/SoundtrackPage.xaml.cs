@@ -38,16 +38,11 @@ namespace VGMPlayer
             InitializeComponent();
 
             var libraryPath = App.Current.Properties["libraryPath"];
-            if (libraryPath.ToString().Length <= 0)
-            {
-                MessageBox.Show("Error getting library path");
-                return;
-            }
 
+            // Creates the soundtrack library
             if (!Directory.Exists(libraryPath.ToString() + "/soundtracks"))
-            {
                 Directory.CreateDirectory(libraryPath.ToString() + "/soundtracks");
-            }
+
             renameWindow = new Rename_Window();
             renameWindow.RenameSelected += (s, e) => RenameSoundtrack();
             GetSoundtracks();
@@ -78,11 +73,11 @@ namespace VGMPlayer
                     Soundtrack soundtrackItem = new Soundtrack();
                     soundtrackItem.Name = soundtrack;
 
+                    // If soundtrack doesn't already exist, create it
                     if (!Directory.Exists(libraryPath.ToString() + "soundtracks/" + soundtrack))
-                    {
                         Directory.CreateDirectory(libraryPath.ToString() + "soundtracks/" + soundtrack);
-                    }
 
+                    // If soundtrack image exists, set the template image to it
                     if (File.Exists(libraryPath.ToString() + "soundtracks/" + soundtrack + "/Image.png"))
                     {
                         BitmapImage image = new BitmapImage();
