@@ -127,9 +127,6 @@
             <Border Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Background="#03bf69" CornerRadius="40 0 40 0" Margin="40 0 0 0">
                 <StackPanel Orientation="Horizontal">
 
-                    <Ellipse Width="60" Height="60" Margin="30 0 0 0">
-                    </Ellipse>
-
                     <StackPanel VerticalAlignment="Center" Margin="20 0 30 0" Width="162">
                         <Label x:Name="currentPlayingLabel" Content="" Width="200" HorizontalContentAlignment="Center" Foreground="White" FontWeight="Bold"/>
                         <Label x:Name="audioPositionLabel" Content="00:00:00 / 00:00:00" FontSize="14" HorizontalContentAlignment="Center" Foreground="White" VerticalAlignment="Bottom"/>
