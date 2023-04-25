@@ -154,6 +154,9 @@
                     <Button Style="{StaticResource playerButton}" Name="loopButton" Foreground ="Gray" Click="LoopMenuItem_Click">
                         <Icon:PackIconMaterial Kind="Repeat" Style="{StaticResource playerButtonIcon}"/>
                     </Button>
+                    <Button Style="{StaticResource playerButton}" Name="shuffleButton" Foreground ="Gray" Click="ShuffleMenuItem_Click">
+                        <Icon:PackIconMaterial Kind="Shuffle" Style="{StaticResource playerButtonIcon}"/>
+                    </Button>
 
                     <Slider x:Name="audioPositionSlider" IsSelectionRangeEnabled="True"  Width="120" Minimum="0" Maximum="0.5" VerticalAlignment="Center" Value="5" SelectionEnd="{Binding ElementName=slider, Path=Value}" ValueChanged="AudioPositionSlider_ValueChanged"/>
                 </StackPanel>

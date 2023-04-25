@@ -18,6 +18,8 @@ using System.Reflection.Metadata.Ecma335;
 using System.Xml.Linq;
 using AngleSharp.Dom;
 using System.Security.Policy;
+using System.Windows.Forms;
+using System.Collections;
 
 namespace VGMPlayer
 {
@@ -26,6 +28,7 @@ namespace VGMPlayer
     {
         public static List<MusicList> currentlyPlayingMusicList = new List<MusicList>();
         public static List<MusicList> currentlyViewingMusicList = new List<MusicList>();
+        public static List<MusicList> tempMusicList = new List<MusicList>();
 
         private MediaPlayer mediaPlayer;
 
@@ -36,6 +39,7 @@ namespace VGMPlayer
         private bool viewingPlaylists;
         private bool viewingSoundtracks;
         private bool addingToPlaylists;
+        private bool shuffleClicked;
 
         private int currentPlayingIndex;
         private PlaylistPage playlistPage;
@@ -60,6 +64,7 @@ namespace VGMPlayer
             viewingPlaylists = false;
             viewingSoundtracks = false;
             addingToPlaylists = false;
+            shuffleClicked = false;
 
             mediaPlayer = new MediaPlayer();
             playlistPage = new PlaylistPage();
@@ -440,6 +445,8 @@ namespace VGMPlayer
         // Searches music library as text is entered in the search bar
         private void SearchBar_TextChanged(object sender, TextChangedEventArgs e)
         {
+            shuffleClicked = false;
+            shuffleButton.Foreground= Brushes.Gray;
             string searchText = SearchBar.Text.ToLowerInvariant();
             if (viewingSoundtracks)
             {
@@ -528,6 +535,50 @@ namespace VGMPlayer
         private void LoopMenuItem_Click(object sender, RoutedEventArgs e)
         {
             Loop();
+        }
+
+        private void ShuffleMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (!shuffleClicked)
+            {
+                shuffleButton.Foreground = Brushes.White;
+                List<MusicList> tempList = new List<MusicList>();
+                foreach (var item in musicListView.Items)
+                {
+                    
+                    var musicItem = item as MusicList;
+                    if (musicItem != null)
+                    {
+                        tempList.Add(musicItem);
+                    }
+                }
+                tempMusicList.Clear();
+                tempMusicList = tempList;
+                musicListView.ItemsSource = tempMusicList;
+
+
+                shuffleClicked = true;
+                var items = musicListView.ItemsSource.Cast<object>().ToList();
+
+                // Create a new instance of the Random class with a seed value
+                Random rnd = new Random(Guid.NewGuid().GetHashCode());
+
+                // Use LINQ to order the items randomly
+                var randomizedList = from item in items
+                                     orderby rnd.Next()
+                                     select item;
+
+                // display the shuffled list in a ListBox
+                musicListView.ItemsSource = randomizedList;
+            }
+            else
+            {
+                shuffleButton.Foreground = Brushes.Gray;
+                shuffleClicked = false;
+                if (tempMusicList.Count() != 0)
+                    musicListView.ItemsSource = tempMusicList;
+
+            }
         }
 
         private void Border_MouseDown(object sender, MouseButtonEventArgs e)
