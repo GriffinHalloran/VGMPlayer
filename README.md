@@ -1,4 +1,4 @@
-This is a WPF application for a music app, specifically for video game music. I was running into the problem where all the songs I'se saved online kept getting taken down due to copywright, so I made an app to download, store, and play the music locally. This uses NAudio to play the music, and YoutubeExplode to download the files from Youtube. The audio files are stores at the path provides in the mainWindow.xaml.cs. Below is an example of what the app looks like with a large song collection.
+This is a WPF application for a music app, specifically for video game music. I was running into the problem where all the songs I've saved online kept getting taken down due to copywright, so I made an app to download, store, and play the music locally. This uses NAudio to play the music, and YoutubeExplode to download the files from Youtube. The audio files are stores at the path provides in the mainWindow.xaml.cs. Below is an example of what the app looks like with a large song collection.
 
 ![Alt Text](https://raw.githubusercontent.com/GriffinHalloran/VGMPlayer/master/Song%20Collection.png)
 
