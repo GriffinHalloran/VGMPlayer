@@ -20,6 +20,7 @@ using AngleSharp.Dom;
 using System.Security.Policy;
 using System.Windows.Forms;
 using System.Collections;
+using System.Runtime.InteropServices;
 
 namespace VGMPlayer
 {
@@ -462,6 +463,8 @@ namespace VGMPlayer
 
             musicListView.ItemsSource = filteredList;
             musicListView.Items.Refresh();
+
+      
         }
 
         private void HomeButton_Click(object sender, RoutedEventArgs e)
@@ -658,7 +661,8 @@ namespace VGMPlayer
 
             if (musicListView.SelectedIndex == -1) return;
 
-            string songName = currentlyViewingMusicList[musicListView.SelectedIndex].Filename;
+            var file = musicListView.ItemsSource.Cast<MusicList>().ElementAt(musicListView.SelectedIndex);
+            string songName = file.Filename;
             string songPath = libraryPath + "Song Collection/" + songName;
 
             if (currentlyPlayingMusicList.SequenceEqual(currentlyViewingMusicList) && currentPlayingLabel.Content.ToString().Length != 0)
@@ -743,16 +747,11 @@ namespace VGMPlayer
         private void RenameSong()
         {
             var libraryPath = App.Current.Properties["libraryPath"].ToString();
-            if (libraryPath.Length <= 0)
-            {
-                MessageBox.Show("Error getting library path");
-                return;
-            }
 
             if (musicListView.Items.Count != 0 && musicListView.SelectedItem != null && renameWindow.GetTitle().Length > 0)
             {
                 string songPath = libraryPath + "Song Collection/";
-                string curSong = currentlyViewingMusicList[musicListView.SelectedIndex].Filename;
+                string curSong = musicListView.ItemsSource.Cast<MusicList>().ElementAt(musicListView.SelectedIndex).Filename;
                 int titleIndex = curSong.IndexOf('-') - 1;
                 int soundtrackIndex = curSong.IndexOf('-', titleIndex + 2);
                 string soundtrack = curSong.Substring(titleIndex + 3, soundtrackIndex - titleIndex - 4);
@@ -765,7 +764,7 @@ namespace VGMPlayer
                     return;
                 }
 
-                System.IO.File.Move(songPath + curSong, songPath + $"{renameWindow.GetTitle()} - {soundtrack} - {duration.Replace(':', '.')}.mp3");
+                System.IO.File.Move(songPath + curSong, songPath + $"{CleanTitle(renameWindow.GetTitle())} - {soundtrack} - {duration.Replace(':', '.')}.mp3");
 
                 var files = Directory.GetFiles(libraryPath + "playlists", "*.xml", SearchOption.AllDirectories);
 
@@ -778,7 +777,7 @@ namespace VGMPlayer
                                         where node != null && node.Value == curSong
                                         select node;
 
-                    playlistSongs.ToList().ForEach(x => x.Value = $"{renameWindow.GetTitle()} - {soundtrack} - {duration.Replace(':', '.')}.mp3");
+                    playlistSongs.ToList().ForEach(x => x.Value = $"{CleanTitle(renameWindow.GetTitle())} - {soundtrack} - {duration.Replace(':', '.')}.mp3");
                     document.Save(xml);
                 }
 
@@ -793,7 +792,7 @@ namespace VGMPlayer
                                         where node != null && node.Value == curSong
                                         select node;
 
-                    soundtrackSongs.ToList().ForEach(x => x.Value = $"{renameWindow.GetTitle()} - {soundtrack} - {duration.Replace(':', '.')}.mp3");
+                    soundtrackSongs.ToList().ForEach(x => x.Value = $"{CleanTitle(renameWindow.GetTitle())} - {soundtrack} - {duration.Replace(':', '.')}.mp3");
                     document.Save(xml);
                 }
 
@@ -824,11 +823,11 @@ namespace VGMPlayer
             if (musicListView.Items.Count != 0 && musicListView.SelectedItem != null && renameWindow.GetTitle().Length > 0)
             {
                 string songPath = libraryPath + "Song Collection/";
-                string curSong = currentlyViewingMusicList[musicListView.SelectedIndex].Filename;
+                string curSong = musicListView.ItemsSource.Cast<MusicList>().ElementAt(musicListView.SelectedIndex).Filename;
                 int titleIndex = curSong.IndexOf('-') - 1;
                 string title = curSong.Substring(0, titleIndex);
                 string duration = curSong.Substring(curSong.LastIndexOf('-') + 2, 8).Replace('.', ':');
-                System.IO.File.Move(songPath + curSong, songPath + $"{title} - {renameWindow.GetTitle()} - {duration.Replace(':', '.')}.mp3");
+                System.IO.File.Move(songPath + curSong, songPath + $"{title} - {CleanTitle(renameWindow.GetTitle())} - {duration.Replace(':', '.')}.mp3");
 
                 var files = Directory.GetFiles(libraryPath + "playlists", "*.xml", SearchOption.AllDirectories);
 
@@ -841,7 +840,7 @@ namespace VGMPlayer
                                         where node != null && node.Value == curSong
                                         select node;
 
-                    playlistSongs.ToList().ForEach(x => x.Value = $"{title} - {renameWindow.GetTitle()} - {duration.Replace(':', '.')}.mp3");
+                    playlistSongs.ToList().ForEach(x => x.Value = $"{title} - {CleanTitle(renameWindow.GetTitle())} - {duration.Replace(':', '.')}.mp3");
                     document.Save(xml);
                 }
                 files = Directory.GetFiles(libraryPath + "soundtracks", "*.xml", SearchOption.AllDirectories);
@@ -866,6 +865,12 @@ namespace VGMPlayer
                 else if (viewingSoundtracks)
                     CheckSoundtrackStatus();
             }
+        }
+
+        // Removes dashes from titles
+        private string CleanTitle(string title)
+        {
+            return string.Join("_", title.Split(System.IO.Path.GetInvalidFileNameChars())).Replace('-', '_');
         }
     }
 }

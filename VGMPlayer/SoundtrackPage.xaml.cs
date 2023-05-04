@@ -191,10 +191,12 @@ namespace VGMPlayer
             OpenFileDialog sfd = new OpenFileDialog();
             sfd.Filter = "Images|*.png;*.bmp;*.jpg";
             ImageFormat format = ImageFormat.Png;
-            sfd.ShowDialog();
-
-            var libraryPath = App.Current.Properties["libraryPath"];
-            System.IO.File.Copy(sfd.FileName, libraryPath + "soundtracks/" + SoundtrackListView.SelectedValue.ToString() + "/Image.png", true);
+            bool? result = sfd.ShowDialog();
+            if (result == true)
+            {
+                var libraryPath = App.Current.Properties["libraryPath"];
+                System.IO.File.Copy(sfd.FileName, libraryPath + "soundtracks/" + SoundtrackListView.SelectedValue.ToString() + "/Image.png", true);
+            }
 
             GetSoundtracks();
         }
